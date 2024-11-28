@@ -28,12 +28,13 @@ class Game:
         screen : pygame.Surface
             La surface de la fenêtre du jeu.
         """
+        #x, y,mouvement,combat,tir,force,defense,attaque,vie,team
         self.screen = screen
-        self.player_units = [Guerrier(0, 0, 10, 4,4,  'player'),
-                             Unit(1, 0, 10, 2,1, 'player')]
+        self.player_units = [Guerrier(0, 0, 4, 4, 4 , 4 , 5 , 4 , 10 , 'player'),
+                             Unit(1, 0, 1, 4, 4 , 4 , 5, 2 , 10 ,'player')]
 
-        self.enemy_units = [Unit(6, 6, 8, 1,1, 'enemy'),
-                            Unit(7, 6, 8, 1,1, 'enemy')]
+        self.enemy_units = [Unit(6, 6, 1, 4, 4 , 4 , 5 , 2 , 10 , 'enemy'),
+                            Unit(6, 5, 1, 4, 4 , 4 , 5 , 2 , 10 , 'enemy')]
 
     def handle_player_turn(self):
         """Tour du joueur"""
@@ -72,20 +73,27 @@ class Game:
                         
                         selected_unit.move(dx, dy)
                         self.flip_display()
-                        print(i)
-                        if (i > selected_unit.vitesse-1):
+                        if (i > selected_unit.mouvement-1):
                             has_acted = True
                             selected_unit.is_selected = False
 
                         # Attaque (touche espace) met fin au tour
                         if event.key == pygame.K_SPACE:
                             for enemy in self.enemy_units:
-                                if abs(selected_unit.x - enemy.x) <= 1 and abs(selected_unit.y - enemy.y) <= 1:
-                                    selected_unit.attack(enemy)
-                                    if enemy.health <= 0:
-                                        self.enemy_units.remove(enemy)
-                            has_acted = True
-                            selected_unit.is_selected = False
+                                selected_unit.attack(enemy)
+                                if enemy.vie <= 0:
+                                    self.enemy_units.remove(enemy)
+                                has_acted = True
+                                selected_unit.is_selected = False
+                        #Capacité spéciale 
+                        if event.key == pygame.K_TAB:
+                            for enemy in self.enemy_units:
+                                selected_unit.battle_cry(enemy)
+                                print('ok man')
+                                if enemy.vie <= 0:
+                                    self.enemy_units.remove(enemy)
+                                has_acted = True
+                                selected_unit.is_selected = False
 
     def handle_enemy_turn(self):
         """IA très simple pour les ennemis."""
@@ -100,7 +108,7 @@ class Game:
             # Attaque si possible
             if abs(enemy.x - target.x) <= 1 and abs(enemy.y - target.y) <= 1:
                 enemy.attack(target)
-                if target.health <= 0:
+                if target.vie <= 0:
                     self.player_units.remove(target)
 
     def flip_display(self):

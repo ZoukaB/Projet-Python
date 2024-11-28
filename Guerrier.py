@@ -25,9 +25,9 @@ class Guerrier:
         La position x de l'unité sur la grille.
     y : int
         La position y de l'unité sur la grille.
-    health : int
+    vie : int
         La santé de l'unité.
-    attack_power : int
+    attaque : int
         La puissance d'attaque de l'unité.
     team : str
         L'équipe de l'unité ('player' ou 'enemy').
@@ -44,7 +44,7 @@ class Guerrier:
         Dessine l'unité sur la grille.
     """
 
-    def __init__(self, x, y, health, attack_power, vitesse, team):
+    def __init__(self, x, y,mouvement,combat,tir,force,defense,attaque,vie,team):
         """
         Construit une unité avec une position, une santé, une puissance d'attaque et une équipe.
 
@@ -54,20 +54,25 @@ class Guerrier:
             La position x de l'unité sur la grille.
         y : int
             La position y de l'unité sur la grille.
-        health : int
+        vie : int
             La santé de l'unité.
-        attack_power : int
+        attaque : int
             La puissance d'attaque de l'unité.
         team : str
             L'équipe de l'unité ('player' ou 'enemy').
         """
         self.x = x
         self.y = y
-        self.health = health
-        self.attack_power = attack_power
+        self.mouvement = mouvement
+        self.combat = combat
+        self.tir = tir
+        self.force = force
+        self.defense = defense
+        self.attaque = attaque
+        self.vie = vie
         self.team = team  # 'player' ou 'enemy'
         self.is_selected = False
-        self.vitesse = vitesse #Entier
+
 
     def move(self, dx, dy):
         """Déplace l'unité de dx, dy."""
@@ -80,11 +85,16 @@ class Guerrier:
         "3% de chance de doubler son attaque"
         pourcentage = random.randint(1,101)
         if abs(self.x - target.x) <= 1 and abs(self.y - target.y) <= 1:
-            if pourcentage <=  50:
-                target.health -= 2*self.attack_power
+            if pourcentage <=  10:
+                target.vie -= 2*self.attaque
             else: 
-                target.health -= self.attack_power
-            
+                target.vie -= self.attaque
+                
+    def battle_cry(self,target):
+            if abs(self.x - target.x) <= 3 and abs(self.y - target.y) <= 3: #incorporer affichage ??
+                target.defense = target.defense/2
+                if target.defense%2 != 0:
+                    target.defense = (target.defense-1)/2
 
     def draw(self, screen):
         """Affiche l'unité sur l'écran."""

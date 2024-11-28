@@ -25,9 +25,9 @@ class Unit:
         La position x de l'unité sur la grille.
     y : int
         La position y de l'unité sur la grille.
-    health : int
+    vie : int
         La santé de l'unité.
-    attack_power : int
+    attaque : int
         La puissance d'attaque de l'unité.
     team : str
         L'équipe de l'unité ('player' ou 'enemy').
@@ -44,7 +44,7 @@ class Unit:
         Dessine l'unité sur la grille.
     """
 
-    def __init__(self, x, y, health, attack_power,vitesse, team):
+    def __init__(self, x, y,mouvement,combat,tir,force,defense,attaque,vie,team):
         """
         Construit une unité avec une position, une santé, une puissance d'attaque et une équipe.
 
@@ -54,20 +54,24 @@ class Unit:
             La position x de l'unité sur la grille.
         y : int
             La position y de l'unité sur la grille.
-        health : int
+        vie : int
             La santé de l'unité.
-        attack_power : int
+        attaque : int
             La puissance d'attaque de l'unité.
         team : str
             L'équipe de l'unité ('player' ou 'enemy').
         """
         self.x = x
         self.y = y
-        self.health = health
-        self.attack_power = attack_power
+        self.mouvement = mouvement
+        self.combat = combat
+        self.tir = tir
+        self.force = force
+        self.defense = defense
+        self.attaque = attaque
+        self.vie = vie
         self.team = team  # 'player' ou 'enemy'
         self.is_selected = False
-        self.vitesse = vitesse
 
     def move(self, dx, dy):
         """Déplace l'unité de dx, dy."""
@@ -78,7 +82,7 @@ class Unit:
     def attack(self, target):
         """Attaque une unité cible."""
         if abs(self.x - target.x) <= 1 and abs(self.y - target.y) <= 1:
-            target.health -= self.attack_power
+            target.vie -= self.attaque
 
     def draw(self, screen):
         """Affiche l'unité sur l'écran."""
