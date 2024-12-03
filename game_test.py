@@ -80,7 +80,13 @@ class Game:
                             selected_unit.is_selected = False
 
                         # Attaque (touche espace) met fin au tour
-                         
+                        if event.key == pygame.K_SPACE:
+                            for enemy in self.enemy_units:
+                                selected_unit.attack(enemy)
+                                if enemy.vie <= 0:
+                                    self.enemy_units.remove(enemy)
+                                has_acted = True
+                                selected_unit.is_selected = False
                         #Capacité spéciale 
                         if event.key == pygame.K_TAB:
                             for enemy in self.enemy_units:
