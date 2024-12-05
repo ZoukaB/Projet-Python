@@ -2,8 +2,11 @@ import pygame
 import random
 from unit import *
 from Classes_personnages import *
+from Guerrier import *
 from unit_new import *
 
+
+GRAY = [200,200,200]
 
 class Game:
     """
@@ -31,8 +34,7 @@ class Game:
         """
         #x, y,mouvement,combat,tir,force,defense,attaque,vie,team
         self.screen = screen
-        self.player_units = [Warrior(),
-                             Unit(1, 0, 1, 4, 4 , 4 , 5, 2 , 10 ,'player')]
+        self.player_units = []
 
         self.enemy_units = [Unit(6, 6, 1, 4, 4 , 4 , 5 , 2 , 10 , 'enemy'),
                             Unit(6, 5, 1, 4, 4 , 4 , 5 , 2 , 10 , 'enemy')]
@@ -129,10 +131,60 @@ class Game:
 
         # Rafraîchit l'écran
         pygame.display.flip()
+        
+def show_start_screen(screen):
+    """Affiche l'écran d'accueil avec choix des personnages et un bouton Start."""
+    clock = pygame.time.Clock()
+    font = pygame.font.Font(None, 36)
+    running = True
+
+    # Options de personnages (à personnaliser)
+    character_options = ["Warrior", "Magicien", "Archer","Mineur","Bourrin","Infirmier"]
+    selected_character = 0
+
+    while running:
+        screen.fill(BLACK)
+
+        # Titre
+        title_text = font.render("Bienvenue dans le jeu de stratégie !", True, WHITE)
+        screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, 50))
+
+        # Affichage des options de personnages
+        for i, character in enumerate(character_options):
+            color = WHITE if i == selected_character else GRAY
+            option_text = font.render(character, True, color)
+            screen.blit(option_text, (WIDTH // 2 - option_text.get_width() // 2, 150 + i * 50))
+
+        # Bouton Start
+        start_text = font.render("START", True, WHITE)
+        start_rect = pygame.Rect(WIDTH // 2 - 50, HEIGHT - 100, 100, 50)
+        pygame.draw.rect(screen, GREEN, start_rect)
+        screen.blit(start_text, (start_rect.x + start_rect.width // 2 - start_text.get_width() // 2,
+                                 start_rect.y + start_rect.height // 2 - start_text.get_height() // 2))
+
+        pygame.display.flip()
+
+        # Gestion des événements
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    selected_character = (selected_character - 1) % len(character_options)
+                elif event.key == pygame.K_DOWN:
+                    selected_character = (selected_character + 1) % len(character_options)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if start_rect.collidepoint(event.pos):
+                    running = False
+
+        clock.tick(30)
+
+    # Retourne le personnage sélectionné
+    return character_options[selected_character]
 
 
 def main():
-
     # Initialisation de Pygame
     pygame.init()
 
@@ -140,13 +192,35 @@ def main():
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Mon jeu de stratégie")
 
+    # Affiche l'écran d'accueil et récupère le personnage choisi
+    selected_character = show_start_screen(screen)
+    print(f"Personnage sélectionné : {selected_character}")
+
+    # Créez les unités basées sur le personnage choisi
+    if selected_character == "Warrior":
+        player_units = [Warrior()]
+    elif selected_character == "Magicien":
+        player_units = [Magicien()]
+    elif selected_character == "Archer":
+        player_units = [Archer()]
+    elif selected_character == "Mineur":
+        player_units = [Mineur()]
+    elif selected_character == "Bourrin":
+        player_units = [Bourrin()]
+    elif selected_character == "Infirmier":
+        player_units = [Infirmier()]
+    else:
+        player_units = []
+
     # Instanciation du jeu
     game = Game(screen)
+    game.player_units = player_units
 
     # Boucle principale du jeu
     while True:
         game.handle_player_turn()
         game.handle_enemy_turn()
+
 
 
 if __name__ == "__main__":
