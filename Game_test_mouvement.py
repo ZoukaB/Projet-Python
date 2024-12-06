@@ -150,8 +150,6 @@ class Game:
         # Update the display
         pygame.display.flip()
 
-
-
 def main():
 
     # Initialisation de Pygame
