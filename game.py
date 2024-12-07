@@ -2,6 +2,7 @@ import pygame
 import random
 from unit import *
 from Guerrier import *
+from combat import combat_round
 
 
 class Game:
@@ -77,14 +78,14 @@ class Game:
                             has_acted = True
                             selected_unit.is_selected = False
 
-                        # Attaque (touche espace) met fin au tour
                         if event.key == pygame.K_SPACE:
                             for enemy in self.enemy_units:
-                                selected_unit.attack(enemy)
-                                if enemy.vie <= 0:
-                                    self.enemy_units.remove(enemy)
-                                has_acted = True
-                                selected_unit.is_selected = False
+                                if abs(selected_unit.x - enemy.x) <= 1 and abs(selected_unit.y - enemy.y) <= 1:
+                                    combat_round(self.screen, selected_unit, enemy)
+                                    if enemy.vie <= 0:
+                                        self.enemy_units.remove(enemy)
+                                    has_acted = True
+                                    selected_unit.is_selected = False
                         #Capacité spéciale 
                         if event.key == pygame.K_TAB:
                             for enemy in self.enemy_units:
