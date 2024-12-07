@@ -1,6 +1,6 @@
 import pygame
 import random
-from unit import *
+from unitcopy import *
 from Guerrier import *
 
 

@@ -44,7 +44,7 @@ class Unit:
         Dessine l'unité sur la grille.
     """
 
-    def __init__(self, x, y,mouvement,combat,tir,force,defense,attaque,vie,max_vie,team):
+    def __init__(self, x, y,mouvement,combat,tir,force,defense,attaque,vie,team):
         """
         Construit une unité avec une position, une santé, une puissance d'attaque et une équipe.
 
@@ -70,28 +70,14 @@ class Unit:
         self.defense = defense
         self.attaque = attaque
         self.vie = vie
-        self.max_vie = max_vie
         self.team = team  # 'player' ou 'enemy'
         self.is_selected = False
 
-    def move(self, dx, dy, all_units):
-        """Move the unit by dx, dy if within grid bounds and target cell is unoccupied."""
-        target_x = self.x + dx
-        target_y = self.y + dy
-
-        # Check if the target position is within the grid bounds
-        if not (0 <= target_x < GRID_SIZE and 0 <= target_y < GRID_SIZE):
-            return False  # Target out of bounds
-
-        # Check if the target cell is occupied by another unit
-        for unit in all_units:
-            if unit.x == target_x and unit.y == target_y:
-                return False  # Target cell is occupied
-
-        # Perform the move if all checks pass
-        self.x = target_x
-        self.y = target_y
-        return True  # Successful move
+    def move(self, dx, dy):
+        """Déplace l'unité de dx, dy."""
+        if 0 <= self.x + dx < GRID_SIZE and 0 <= self.y + dy < GRID_SIZE:
+            self.x += dx
+            self.y += dy
 
     def attack(self, target):
         """Attaque une unité cible."""
