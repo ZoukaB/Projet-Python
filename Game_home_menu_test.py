@@ -9,7 +9,6 @@ GRID_SIZE = 25
 CELL_SIZE = 25
 WIDTH = GRID_SIZE * CELL_SIZE
 HEIGHT = GRID_SIZE * CELL_SIZE
-
 # Character names and image file paths (replace with actual image paths)
 # Character options with their stats
 CHARACTER_OPTIONS = [
@@ -28,10 +27,10 @@ class Game:
         self.player2_units = []
         
     def initialize_home_screen(self):
-        pygame.init()
-        screen_info = pygame.display.Info()
-        WIDTH = screen_info.current_w
-        HEIGHT = screen_info.current_h
+        # pygame.init()
+        # screen_info = pygame.display.Info()
+        # WIDTH = screen_info.current_w
+        # HEIGHT = screen_info.current_h
         screen = pygame.display.set_mode((WIDTH, HEIGHT))#, pygame.FULLSCREEN)
         pygame.display.set_caption("Character Selection")
 
@@ -356,7 +355,7 @@ class Game:
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))#, pygame.FULLSCREEN)
     pygame.display.set_caption("Mon jeu de stratégie")
 
     game = Game(screen)

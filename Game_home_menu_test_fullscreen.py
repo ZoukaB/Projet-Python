@@ -1,40 +1,161 @@
+import sys
 import pygame
 import random
 from unit_fullscreen import *
 
-# # Initialize Pygame to fetch display info
-# pygame.init()
-# screen_info = pygame.display.Info()
-
-# # Get the screen dimensions
-# SCREEN_WIDTH = screen_info.current_w
-# SCREEN_HEIGHT = screen_info.current_h
-
-# # Desired cell size (you can adjust this for larger or smaller cells)
-# CELL_SIZE = 30
-
-# # Calculate the number of columns and rows to ensure full coverage
-# GRID_COLUMNS = (SCREEN_WIDTH + CELL_SIZE +1 ) // CELL_SIZE  # Round up to cover full width
-# GRID_ROWS = (SCREEN_HEIGHT + CELL_SIZE + 1) // CELL_SIZE   # Round up to cover full height
-
-# # Calculate the exact grid width and height based on the number of columns and rows
-# WIDTH = GRID_COLUMNS * CELL_SIZE
-# HEIGHT = GRID_ROWS * CELL_SIZE
+# Character names and image file paths (replace with actual image paths)
+# Character options with their stats
+CHARACTER_OPTIONS = [
+    {"name": "Guerrier", "stats": (0, 10, 4, 4, 4, 4, 5, 4, 10, 10)},
+    {"name": "Archer", "stats": (0, 0, 5, 3, 5, 3, 4, 3, 4, 4)},
+    {"name": "Magicien", "stats": (0, 0, 3, 6, 2, 5, 3, 2, 2, 2)},
+    {"name": "Assassin", "stats": (0, 0, 6, 2, 4, 4, 4, 4, 10, 10)},
+    {"name": "Guerrier2", "stats": (0, 10, 4, 4, 4, 4, 5, 4, 10, 10)},
+    {"name": "Archer2", "stats": (0, 0, 5, 3, 5, 3, 4, 3, 4, 4)},
+    {"name": "Magicien2", "stats": (0, 0, 3, 6, 2, 5, 3, 2, 2, 2)},
+    {"name": "Assassin2", "stats": (0, 0, 6, 2, 4, 4, 4, 4, 10, 10)}
+]
+# A terme, remplacer par vraies statistiques des personnages dans la fonction remplacer Unit par nos classes Personnages
 
 class Game:
     def __init__(self, screen):
         self.screen = screen
-        self.player1_units = [
-            Unit(0, 0, 50, 4, 4, 4, 5, 4, 10,10, 'player1'),
-            Unit(1, 0, 1, 4, 4, 4, 5, 2, 8,8, 'player1'),
-            # Unit(3, 0, 1, 4, 4, 4, 5, 2, 10, 'player'),
-            # Unit(4, 0, 1, 4, 4, 4, 5, 2, 10, 'player')
+        self.player1_units = []
+
+        self.player2_units = []
+        
+    def initialize_home_screen(self):
+        # Font for button and text
+        font = pygame.font.Font(None, 36)
+        small_font = pygame.font.Font(None, 24)
+
+        # Button for starting the game
+        start_button = pygame.Rect(WIDTH // 2 - 62, HEIGHT - 70, 125, 50)
+
+        # Load character images (replace with actual image paths)
+        character_images = {
+            "Guerrier": pygame.image.load("Guerrier.jpg").convert_alpha(),
+            "Archer": pygame.image.load("archer.jpg").convert_alpha(),
+            "Magicien": pygame.image.load("magicien.jpg").convert_alpha(),
+            "Assassin": pygame.image.load("image.jpeg").convert_alpha(),
+            "Guerrier2": pygame.image.load("Guerrier.jpg").convert_alpha(),
+            "Archer2": pygame.image.load("archer.jpg").convert_alpha(),
+            "Magicien2": pygame.image.load("magicien.jpg").convert_alpha(),
+            "Assassin2": pygame.image.load("image.jpeg").convert_alpha(),
+        }
+
+        # Resize character images to fit larger squares
+        for key in character_images:
+            character_images[key] = pygame.transform.scale(character_images[key], (100, 100))
+
+        # Positions for Player 1 and Player 2 character choices (two columns each)
+        player1_choice_positions = [
+            (100, 150), (250, 150),
+            (100, 300), (250, 300),
+            (100, 450), (250, 450),
+            (100, 600), (250, 600)
+            
+        ]
+        player2_choice_positions = [
+            (WIDTH - 300, 150), (WIDTH - 150, 150),
+            (WIDTH - 300, 300), (WIDTH - 150, 300),
+            (WIDTH - 300, 450), (WIDTH - 150, 450),
+            (WIDTH - 300, 600), (WIDTH - 150, 600)
         ]
 
-        self.player2_units = [
-            Unit(6, 6, 50, 4, 4, 4, 5, 1, 6,6, 'player2'),
-            Unit(6, 5, 1, 4, 4, 4, 5, 1, 4,4, 'player2')
-        ]
+        # Selections for Player 1 and Player 2
+        player1_selection = []
+        player2_selection = []
+
+        # Initialize starting positions for each player's units
+        player1_positions = [(i, 0) for i in range(2)]
+        player2_positions = [(GRID_COLUMNS - i, GRID_ROWS - 1) for i in range(1, 3)]
+
+        # Main loop for the home screen
+        running = True
+        while running:
+            self.screen.fill(BLACK)
+
+            # Draw instructions
+            instructions = font.render("Select 2 Characters Each", True, WHITE)
+            self.screen.blit(instructions, (WIDTH // 2 - instructions.get_width() // 2, 25))
+
+            # Draw Player 1's character choices
+            player1_text = font.render("Player 1", True, GREEN)
+            self.screen.blit(player1_text, (150 - player1_text.get_width() // 2, 50))
+            for i, option in enumerate(CHARACTER_OPTIONS):
+                x, y = player1_choice_positions[i]
+                pygame.draw.rect(self.screen, WHITE, (x - 50, y - 50, 100, 100), 2)
+                self.screen.blit(character_images[option["name"]], (x - 50, y - 50))
+
+                # Draw character name below the image
+                name_text = small_font.render(option["name"], True, WHITE)
+                self.screen.blit(name_text, (x - name_text.get_width() // 2, y + 60))
+
+                # Highlight selection
+                if option["name"] in player1_selection:
+                    pygame.draw.rect(self.screen, GREEN, (x - 50, y - 50, 100, 100), 4)
+
+            # Draw Player 2's character choices
+            player2_text = font.render("Player 2", True, BLUE)
+            self.screen.blit(player2_text, (WIDTH - 200 - player2_text.get_width() // 2, 50))
+            for i, option in enumerate(CHARACTER_OPTIONS):
+                x, y = player2_choice_positions[i]
+                pygame.draw.rect(self.screen, WHITE, (x - 50, y - 50, 100, 100), 2)
+                self.screen.blit(character_images[option["name"]], (x - 50, y - 50))
+
+                # Draw character name below the image
+                name_text = small_font.render(option["name"], True, WHITE)
+                self.screen.blit(name_text, (x - name_text.get_width() // 2, y + 60))
+
+                # Highlight selection
+                if option["name"] in player2_selection:
+                    pygame.draw.rect(self.screen, BLUE, (x - 50, y - 50, 100, 100), 4)
+
+            # Draw the Start button
+            pygame.draw.rect(self.screen, WHITE, start_button)
+            start_text = font.render("Start", True, BLACK)
+            self.screen.blit(start_text, (start_button.x + (start_button.width - start_text.get_width()) // 2,
+                                          start_button.y + (start_button.height - start_text.get_height()) // 2))
+
+            # Event handling
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+
+                    # Check if a Player 1 character was clicked
+                    for i, option in enumerate(CHARACTER_OPTIONS):
+                        x, y = player1_choice_positions[i]
+                        rect = pygame.Rect(x - 50, y - 50, 100, 100)
+
+                        if rect.collidepoint(mouse_pos):
+                            if option["name"] not in player1_selection and len(player1_selection) < 2:
+                                player1_selection.append(option["name"])
+                                px, py = player1_positions[len(player1_selection) - 1]
+                                self.player1_units.append(Unit(px, py, *option["stats"][2:], 'player1'))
+
+                    # Check if a Player 2 character was clicked
+                    for i, option in enumerate(CHARACTER_OPTIONS):
+                        x, y = player2_choice_positions[i]
+                        rect = pygame.Rect(x - 50, y - 50, 100, 100)
+
+                        if rect.collidepoint(mouse_pos):
+                            if option["name"] not in player2_selection and len(player2_selection) < 2:
+                                player2_selection.append(option["name"])
+                                px, py = player2_positions[len(player2_selection) - 1]
+                                self.player2_units.append(Unit(px, py, *option["stats"][2:], 'player2'))
+
+                    # Check if the Start button was clicked
+                    if start_button.collidepoint(mouse_pos):
+                        if len(player1_selection) == 2 and len(player2_selection) == 2:
+                            running = False  # Exit the home screen loop to start the game
+
+            pygame.display.flip()
+
 
     def handle_player1_turn(self):
         selected_unit = None
@@ -116,7 +237,7 @@ class Game:
                 if event.type == pygame.MOUSEMOTION:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     hovered_cell = (mouse_x // CELL_SIZE, mouse_y // CELL_SIZE)
-
+                    
             if len(moved_units) == len(self.player2_units):
                 break  
 
@@ -142,24 +263,26 @@ class Game:
             # === First Column: Character Display and Health Bar ===
             char_center_x = menu_x + column_width // 2  # Center character in the first column
             char_center_y = menu_y + 35  # Position the character near the top
+
             if selected_unit.team == 'player1':
-                pygame.draw.circle(self.screen, (0, 0, 255), (char_center_x, char_center_y), 15)  # Blue circle to represent the unit
+                pygame.draw.circle(self.screen, (0, 0, 255), (char_center_x, char_center_y), 15)  # Blue circle for player 1
             else:
-                pygame.draw.circle(self.screen, (255, 0, 0), (char_center_x, char_center_y), 15)
+                pygame.draw.circle(self.screen, (255, 0, 0), (char_center_x, char_center_y), 15)  # Red circle for player 2
 
             # Draw the health bar below the character
-            health_bar_width = 80
-            health_bar_height = 8
+            health_bar_width = 100  # Fixed width for the health bar
+            health_bar_height = 10
             health_bar_x = char_center_x - health_bar_width // 2  # Center the health bar
             health_bar_y = char_center_y + 30  # Position below the character
 
             # Calculate the width of the green health bar based on the unit's health
-            health_ratio = selected_unit.vie / selected_unit.max_vie # Assuming max health is 10
+            health_ratio = selected_unit.vie // selected_unit.max_vie
             health_fill_width = int(health_ratio * health_bar_width)
 
-            # Draw the health bar background (gray) and foreground (green)
-            pygame.draw.rect(self.screen, (128, 128, 128), (health_bar_x, health_bar_y, health_bar_width, health_bar_height))  # Background
-            pygame.draw.rect(self.screen, (0, 255, 0), (health_bar_x, health_bar_y, health_fill_width, health_bar_height))  # Foreground
+            # Draw the health bar background (gray)
+            pygame.draw.rect(self.screen, (128, 128, 128), (health_bar_x, health_bar_y, health_bar_width, health_bar_height))
+            # Draw the health bar foreground (green) clipped to current health
+            pygame.draw.rect(self.screen, (0, 255, 0), (health_bar_x, health_bar_y, health_fill_width, health_bar_height))
 
             # === Second Column: 3 of the 5 stats ===
             second_column_x = menu_x + column_width
@@ -178,6 +301,7 @@ class Game:
             third_column_stats = [
                 f"Force: {selected_unit.force}",
                 f"Combat: {selected_unit.combat}",
+                f"Vie max: {selected_unit.max_vie}",
             ]
 
             for i, line in enumerate(third_column_stats):
@@ -193,6 +317,7 @@ class Game:
             text_x = menu_x + menu_width // 2 - text_surface.get_width() // 2
             text_y = menu_y + menu_height - 45  # Leave some padding from the bottom
             self.screen.blit(text_surface, (text_x, text_y))
+
 
     def flip_display(self, selected_unit=None, hovered_cell=None):
         self.screen.fill(BLACK)
@@ -235,12 +360,14 @@ class Game:
 
         pygame.display.flip()
 
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
     pygame.display.set_caption("Mon jeu de stratégie")
 
     game = Game(screen)
+    game.initialize_home_screen()
 
     while True:
         game.handle_player1_turn()
