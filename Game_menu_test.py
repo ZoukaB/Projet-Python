@@ -12,19 +12,19 @@ HEIGHT = GRID_SIZE * CELL_SIZE
 class Game:
     def __init__(self, screen):
         self.screen = screen
-        self.player_units = [
-            Unit(0, 0, 4, 4, 4, 4, 5, 4, 10, 'player'),
-            Unit(1, 0, 1, 4, 4, 4, 5, 2, 10, 'player'),
+        self.player1_units = [
+            Unit(0, 0, 4, 4, 4, 4, 5, 4, 10, 'player1'),
+            Unit(1, 0, 1, 4, 4, 4, 5, 2, 10, 'player1'),
             # Unit(3, 0, 1, 4, 4, 4, 5, 2, 10, 'player'),
             # Unit(4, 0, 1, 4, 4, 4, 5, 2, 10, 'player')
         ]
 
-        self.enemy_units = [
-            Unit(6, 6, 1, 4, 4, 4, 5, 1, 10, 'enemy'),
-            Unit(6, 5, 1, 4, 4, 4, 5, 1, 10, 'enemy')
+        self.player2_units = [
+            Unit(6, 6, 1, 4, 4, 4, 5, 1, 10, 'player2'),
+            Unit(6, 5, 1, 4, 4, 4, 5, 1, 10, 'player2')
         ]
 
-    def handle_player_turn(self):
+    def handle_player1_turn(self):
         selected_unit = None
         hovered_cell = None
         moved_units = []
@@ -38,41 +38,78 @@ class Game:
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     grid_x, grid_y = mouse_x // CELL_SIZE, mouse_y // CELL_SIZE
-                    
+
+                    # Select a unit if no unit is currently selected
                     if not selected_unit:
-                        for unit in self.player_units:
+                        for unit in self.player1_units:
                             if unit.x == grid_x and unit.y == grid_y and unit not in moved_units:
                                 selected_unit = unit
                                 selected_unit.is_selected = True
                                 break
 
+                    # Move the selected unit if one is selected
                     elif selected_unit:
-                        if abs(grid_x - selected_unit.x) + abs(grid_y - selected_unit.y) <= selected_unit.mouvement:
-                            selected_unit.move(grid_x - selected_unit.x, grid_y - selected_unit.y)
-                            selected_unit.is_selected = False
-                            moved_units.append(selected_unit)
-                            selected_unit = None
-                
+                        dx = grid_x - selected_unit.x
+                        dy = grid_y - selected_unit.y
+
+                        if abs(dx) + abs(dy) <= selected_unit.mouvement:
+                            if selected_unit.move(dx, dy, self.player1_units + self.player2_units):
+                                selected_unit.is_selected = False
+                                moved_units.append(selected_unit)
+                                selected_unit = None
+
                 if event.type == pygame.MOUSEMOTION:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     hovered_cell = (mouse_x // CELL_SIZE, mouse_y // CELL_SIZE)
-                    
-            if len(moved_units) == len(self.player_units):
+
+            if len(moved_units) == len(self.player1_units):
                 break  
 
             self.flip_display(selected_unit, hovered_cell)
-            
-    def handle_enemy_turn(self):
-        for enemy in self.enemy_units:
-            target = random.choice(self.player_units)
-            dx = 1 if enemy.x < target.x else -1 if enemy.x > target.x else 0
-            dy = 1 if enemy.y < target.y else -1 if enemy.y > target.y else 0
-            enemy.move(dx, dy)
+    
+    def handle_player2_turn(self):
+        selected_unit = None
+        hovered_cell = None
+        moved_units = []
 
-            if abs(enemy.x - target.x) <= 1 and abs(enemy.y - target.y) <= 1:
-                enemy.attack(target)
-                if target.vie <= 0:
-                    self.player_units.remove(target)
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                    
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                    grid_x, grid_y = mouse_x // CELL_SIZE, mouse_y // CELL_SIZE
+
+                    # Select a unit if no unit is currently selected
+                    if not selected_unit:
+                        for unit in self.player2_units:
+                            if unit.x == grid_x and unit.y == grid_y and unit not in moved_units:
+                                selected_unit = unit
+                                selected_unit.is_selected = True
+                                break
+
+                    # Move the selected unit if one is selected
+                    elif selected_unit:
+                        dx = grid_x - selected_unit.x
+                        dy = grid_y - selected_unit.y
+
+                        if abs(dx) + abs(dy) <= selected_unit.mouvement:
+                            if selected_unit.move(dx, dy, self.player1_units + self.player2_units):
+                                selected_unit.is_selected = False
+                                moved_units.append(selected_unit)
+                                selected_unit = None
+
+                if event.type == pygame.MOUSEMOTION:
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                    hovered_cell = (mouse_x // CELL_SIZE, mouse_y // CELL_SIZE)
+
+            if len(moved_units) == len(self.player2_units):
+                break  
+
+            self.flip_display(selected_unit, hovered_cell)      
+    
 
     def draw_menu(self, selected_unit):
         """Draws the unit information menu in the lower-left corner."""
@@ -151,7 +188,7 @@ class Game:
                 rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
                 pygame.draw.rect(self.screen, WHITE, rect, 1)
 
-        for unit in self.player_units + self.enemy_units:
+        for unit in self.player1_units + self.player2_units:
             unit.draw(self.screen)
 
         if selected_unit:
@@ -192,8 +229,8 @@ def main():
     game = Game(screen)
 
     while True:
-        game.handle_player_turn()
-        game.handle_enemy_turn()
+        game.handle_player1_turn()
+        game.handle_player2_turn()
 
 if __name__ == "__main__":
     main()
