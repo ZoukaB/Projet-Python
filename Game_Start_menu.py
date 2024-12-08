@@ -1,20 +1,19 @@
 import sys
 import pygame
 import random
-from unit import *
+from unit_fullscreen import *
 
-# Constantes
-GRID_SIZE = 25
-CELL_SIZE = 25
-WIDTH = GRID_SIZE * CELL_SIZE
-HEIGHT = GRID_SIZE * CELL_SIZE
 # Character names and image file paths (replace with actual image paths)
 # Character options with their stats
 CHARACTER_OPTIONS = [
-    {"name": "Guerrier", "stats": (0, 10, 4, 4, 4, 4, 5, 4, 10, 4)},
-    {"name": "Archer", "stats": (0, 0, 5, 3, 5, 3, 4, 3, 8, 4)},
-    {"name": "Magicien", "stats": (0, 0, 3, 6, 2, 5, 3, 2, 7, 4)},
-    {"name": "Assassin", "stats": (0, 0, 6, 2, 4, 4, 4, 4, 9, 4)}
+    {"name": "Guerrier", "stats": (0, 10, 4, 4, 4, 4, 5, 4, 10, 10)},
+    {"name": "Archer", "stats": (0, 0, 5, 3, 5, 3, 4, 3, 4, 4)},
+    {"name": "Magicien", "stats": (0, 0, 3, 6, 2, 5, 3, 2, 2, 2)},
+    {"name": "Assassin", "stats": (0, 0, 6, 2, 4, 4, 4, 4, 10, 10)},
+    {"name": "Guerrier2", "stats": (0, 10, 4, 4, 4, 4, 5, 4, 10, 10)},
+    {"name": "Archer2", "stats": (0, 0, 5, 3, 5, 3, 4, 3, 4, 4)},
+    {"name": "Magicien2", "stats": (0, 0, 3, 6, 2, 5, 3, 2, 2, 2)},
+    {"name": "Assassin2", "stats": (0, 0, 6, 2, 4, 4, 4, 4, 10, 10)}
 ]
 # A terme, remplacer par vraies statistiques des personnages dans la fonction remplacer Unit par nos classes Personnages
 
@@ -22,46 +21,190 @@ class Game:
     def __init__(self, screen):
         self.screen = screen
         self.player1_units = []
-
         self.player2_units = []
         
-                    # Load and display the unit's image based on its class name
-        self. character_images = {
-                "Guerrier": pygame.image.load("Guerrier.jpg").convert_alpha(),
-                "Archer": pygame.image.load("archer.jpg").convert_alpha(),
-                "Magicien": pygame.image.load("magicien.jpg").convert_alpha(),
-                "Assassin": pygame.image.load("image.jpeg").convert_alpha(),
-                "Guerrier2": pygame.image.load("Guerrier.jpg").convert_alpha(),
-                "Archer2": pygame.image.load("archer.jpg").convert_alpha(),
-                "Magicien2": pygame.image.load("magicien.jpg").convert_alpha(),
-                "Assassin2": pygame.image.load("image.jpeg").convert_alpha(),
-            }
+        # Load the background image (replace with the actual image path)
+        self.background_image = pygame.image.load("background.jpg").convert()
+        self.background_image = pygame.transform.scale(self.background_image, (WIDTH, HEIGHT))
         
-    def initialize_home_screen(self):
-        # pygame.init()
-        # screen_info = pygame.display.Info()
-        # WIDTH = screen_info.current_w
-        # HEIGHT = screen_info.current_h
-        screen = pygame.display.set_mode((WIDTH, HEIGHT))#, pygame.FULLSCREEN)
-        pygame.display.set_caption("Character Selection")
+        # Load character images (replace with actual image paths)
+        self.character_images = {
+            "Guerrier": pygame.image.load("Guerrier.jpg").convert_alpha(),
+            "Archer": pygame.image.load("archer.jpg").convert_alpha(),
+            "Magicien": pygame.image.load("magicien.jpg").convert_alpha(),
+            "Assassin": pygame.image.load("image.jpeg").convert_alpha(),
+            "Guerrier2": pygame.image.load("Guerrier.jpg").convert_alpha(),
+            "Archer2": pygame.image.load("archer.jpg").convert_alpha(),
+            "Magicien2": pygame.image.load("magicien.jpg").convert_alpha(),
+            "Assassin2": pygame.image.load("image.jpeg").convert_alpha(),
+        }
+     
+    def draw_semi_transparent_background(self):
+        """Draws a semi-transparent background image."""
+        # Create a semi-transparent surface
+        transparent_surface = self.background_image.copy()
+        transparent_surface.set_alpha(128)  # 50% opacity (0 = fully transparent, 255 = fully opaque)
 
+        # Blit the semi-transparent background onto the screen
+        self.screen.blit(transparent_surface, (0, 0))
+     
+    def initialize_main_menu(self):
+        """Displays the main menu with options to view rules, character powers, and start the game."""
+        # Font for title and buttons
+        title_font = pygame.font.Font(None, 72)
+        button_font = pygame.font.Font(None, 36)
+
+        # Buttons for the main menu
+        rules_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 60, 200, 50)
+        powers_button = pygame.Rect(WIDTH // 2 - 200, HEIGHT // 2, 400, 50)
+        start_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 60, 200, 50)
+
+        # Main loop for the main menu
+        running = True
+        while running:
+            #self.screen.fill(BLACK)
+            self.draw_semi_transparent_background()  # Draw the semi-transparent background
+
+            # Draw the game title
+            title_text = title_font.render("Mon Jeu de Stratégie", True, WHITE)
+            self.screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, HEIGHT // 4))
+
+            # Draw the buttons
+            pygame.draw.rect(self.screen, WHITE, rules_button)
+            pygame.draw.rect(self.screen, WHITE, powers_button)
+            pygame.draw.rect(self.screen, WHITE, start_button)
+
+            rules_text = button_font.render("Règles du Jeu", True, BLACK)
+            powers_text = button_font.render("Pouvoirs des Personnages", True, BLACK)
+            start_text = button_font.render("Démarrer", True, BLACK)
+
+            self.screen.blit(rules_text, (rules_button.x + (rules_button.width - rules_text.get_width()) // 2, rules_button.y + 10))
+            self.screen.blit(powers_text, (powers_button.x + (powers_button.width - powers_text.get_width()) // 2, powers_button.y + 10))
+            self.screen.blit(start_text, (start_button.x + (start_button.width - start_text.get_width()) // 2, start_button.y + 10))
+
+            # Event handling
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+
+                    if rules_button.collidepoint(mouse_pos):
+                        self.show_rules()
+
+                    if powers_button.collidepoint(mouse_pos):
+                        self.show_powers()
+
+                    if start_button.collidepoint(mouse_pos):
+                        running = False  # Proceed to the character choice menu
+
+            pygame.display.flip()
+
+    def show_rules(self):
+        """Displays the game rules screen."""
+        font = pygame.font.Font(None, 28)
+        back_button = pygame.Rect(WIDTH - 150, HEIGHT - 60, 120, 40)
+
+        running = True
+        while running:
+            self.screen.fill(BLACK)
+
+            # Display the rules text
+            rules_text_lines = [
+                "Règles du Jeu:",
+                "1. Chaque joueur choisit 2 personnages.",
+                "2. Les joueurs déplacent leurs unités à tour de rôle.",
+                "3. L'objectif est de vaincre toutes les unités adverses.",
+                "4. Chaque unité a des capacités uniques.",
+            ]
+
+            for i, line in enumerate(rules_text_lines):
+                text_surface = font.render(line, True, WHITE)
+                self.screen.blit(text_surface, (50, 100 + i * 40))
+
+            # Draw back button
+            pygame.draw.rect(self.screen, WHITE, back_button)
+            back_text = font.render("Retour", True, BLACK)
+            self.screen.blit(back_text, (back_button.x + 20, back_button.y + 10))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+                    if back_button.collidepoint(mouse_pos):
+                        running = False  # Go back to the main menu
+
+            pygame.display.flip()
+
+    def show_powers(self):
+        """Displays the character powers screen."""
+        font = pygame.font.Font(None, 28)
+        back_button = pygame.Rect(WIDTH - 150, HEIGHT - 60, 120, 40)
+
+        running = True
+        while running:
+            self.screen.fill(BLACK)
+
+            # Display character powers text
+            powers_text_lines = [
+                "Pouvoirs des Personnages:",
+                "Guerrier: Puissant en attaque rapprochée.",
+                "Archer: Attaque à distance avec précision.",
+                "Magicien: Utilise des sorts puissants.",
+                "Assassin: Agile et rapide en déplacement.",
+            ]
+
+            for i, line in enumerate(powers_text_lines):
+                text_surface = font.render(line, True, WHITE)
+                self.screen.blit(text_surface, (50, 100 + i * 40))
+
+            # Draw back button
+            pygame.draw.rect(self.screen, WHITE, back_button)
+            back_text = font.render("Retour", True, BLACK)
+            self.screen.blit(back_text, (back_button.x + 20, back_button.y + 10))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+                    if back_button.collidepoint(mouse_pos):
+                        running = False  # Go back to the main menu
+
+            pygame.display.flip()
+     
+    def character_choice_screen(self):
         # Font for button and text
         font = pygame.font.Font(None, 36)
         small_font = pygame.font.Font(None, 24)
 
         # Button for starting the game
-        start_button = pygame.Rect(WIDTH // 2 - 62 , HEIGHT - 70, 125, 50)
+        start_button = pygame.Rect(WIDTH // 2 - 62, HEIGHT - 70, 125, 50)
 
-        # Resize character images to fit the smaller squares
+        # Resize character images to fit larger squares
         for key in self.character_images:
-            self.character_images[key] = pygame.transform.scale(self.character_images[key], (60, 60))
+            self.character_images[key] = pygame.transform.scale(self.character_images[key], (100, 100))
 
-        # Positions for Player 1 and Player 2 character choices
+        # Positions for Player 1 and Player 2 character choices (two columns each)
         player1_choice_positions = [
-            (100, 150), (100, 250), (100, 350), (100, 450)
+            (100, 150), (250, 150),
+            (100, 300), (250, 300),
+            (100, 450), (250, 450),
+            (100, 600), (250, 600)
+            
         ]
         player2_choice_positions = [
-            (WIDTH - 100, 150), (WIDTH - 100, 250), (WIDTH - 100, 350), (WIDTH - 100, 450)
+            (WIDTH - 300, 150), (WIDTH - 150, 150),
+            (WIDTH - 300, 300), (WIDTH - 150, 300),
+            (WIDTH - 300, 450), (WIDTH - 150, 450),
+            (WIDTH - 300, 600), (WIDTH - 150, 600)
         ]
 
         # Selections for Player 1 and Player 2
@@ -70,54 +213,56 @@ class Game:
 
         # Initialize starting positions for each player's units
         player1_positions = [(i, 0) for i in range(2)]
-        player2_positions = [(GRID_SIZE - i, GRID_SIZE - 1) for i in range(1,3)]
+        player2_positions = [(GRID_COLUMNS - i, GRID_ROWS - 1) for i in range(1, 3)]
 
         # Main loop for the home screen
         running = True
         while running:
-            screen.fill(BLACK)
+            #self.screen.fill(BLACK)
+            self.draw_semi_transparent_background()  # Draw the semi-transparent background
 
             # Draw instructions
             instructions = font.render("Select 2 Characters Each", True, WHITE)
-            screen.blit(instructions, (WIDTH // 2 - instructions.get_width() // 2, 25))
+            self.screen.blit(instructions, (WIDTH // 2 - instructions.get_width() // 2, 25))
 
             # Draw Player 1's character choices
             player1_text = font.render("Player 1", True, GREEN)
-            screen.blit(player1_text, (100 - player1_text.get_width() // 2, 75))
+            self.screen.blit(player1_text, (150 - player1_text.get_width() // 2, 50))
             for i, option in enumerate(CHARACTER_OPTIONS):
                 x, y = player1_choice_positions[i]
-                pygame.draw.rect(screen, WHITE, (x - 35, y - 35, 70, 70), 2)
-                screen.blit(self.character_images[option["name"]], (x - 30, y - 30))
+                pygame.draw.rect(self.screen, WHITE, (x - 50, y - 50, 100, 100), 2)
+                self.screen.blit(self.character_images[option["name"]], (x - 50, y - 50))
 
                 # Draw character name below the image
                 name_text = small_font.render(option["name"], True, WHITE)
-                screen.blit(name_text, (x - name_text.get_width() // 2, y + 40))
+                self.screen.blit(name_text, (x - name_text.get_width() // 2, y + 60))
 
                 # Highlight selection
                 if option["name"] in player1_selection:
-                    pygame.draw.rect(screen, GREEN, (x - 35, y - 35, 70, 70), 4)
+                    pygame.draw.rect(self.screen, GREEN, (x - 50, y - 50, 100, 100), 4)
 
             # Draw Player 2's character choices
             player2_text = font.render("Player 2", True, BLUE)
-            screen.blit(player2_text, (WIDTH - 100 - player2_text.get_width() // 2, 75))
+            self.screen.blit(player2_text, (WIDTH - 200 - player2_text.get_width() // 2, 50))
             for i, option in enumerate(CHARACTER_OPTIONS):
                 x, y = player2_choice_positions[i]
-                pygame.draw.rect(screen, WHITE, (x - 35, y - 35, 70, 70), 2)
-                screen.blit(self.character_images[option["name"]], (x - 30, y - 30))
+                pygame.draw.rect(self.screen, WHITE, (x - 50, y - 50, 100, 100), 2)
+                self.screen.blit(self.character_images[option["name"]], (x - 50, y - 50))
 
                 # Draw character name below the image
                 name_text = small_font.render(option["name"], True, WHITE)
-                screen.blit(name_text, (x - name_text.get_width() // 2, y + 40))
+                self.screen.blit(name_text, (x - name_text.get_width() // 2, y + 60))
 
                 # Highlight selection
                 if option["name"] in player2_selection:
-                    pygame.draw.rect(screen, BLUE, (x - 35, y - 35, 70, 70), 4)
+                    pygame.draw.rect(self.screen, BLUE, (x - 50, y - 50, 100, 100), 4)
 
             # Draw the Start button
-            pygame.draw.rect(screen, WHITE, start_button)
+            pygame.draw.rect(self.screen, WHITE, start_button)
             start_text = font.render("Start", True, BLACK)
-            screen.blit(start_text, (start_button.x + (start_button.width - start_text.get_width()) // 2,
-                                     start_button.y + (start_button.height - start_text.get_height()) // 2))
+            self.screen.blit(start_text, (start_button.x + (start_button.width - start_text.get_width()) // 2,
+                                          start_button.y + (start_button.height - start_text.get_height()) // 2))
+
             # Event handling
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -130,7 +275,7 @@ class Game:
                     # Check if a Player 1 character was clicked
                     for i, option in enumerate(CHARACTER_OPTIONS):
                         x, y = player1_choice_positions[i]
-                        rect = pygame.Rect(x - 35, y - 35, 70, 70)
+                        rect = pygame.Rect(x - 50, y - 50, 100, 100)
 
                         if rect.collidepoint(mouse_pos):
                             if option["name"] not in player1_selection and len(player1_selection) < 2:
@@ -144,16 +289,24 @@ class Game:
                                     self.player1_units.append(Magicien(px, py, *option["stats"][2:], 'player1'))
                                 if option["name"] == 'Assassin':
                                     self.player1_units.append(Assassin(px, py, *option["stats"][2:], 'player1'))
+                                if option["name"] == 'Guerrier2':
+                                    self.player1_units.append(Guerrier(px, py, *option["stats"][2:], 'player1'))
+                                if option["name"] == 'Archer2':
+                                    self.player1_units.append(Archer(px, py, *option["stats"][2:], 'player1'))
+                                if option["name"] == 'Magicien2':
+                                    self.player1_units.append(Magicien(px, py, *option["stats"][2:], 'player1'))
+                                if option["name"] == 'Assassin2':
+                                    self.player1_units.append(Assassin(px, py, *option["stats"][2:], 'player1'))
+
 
                     # Check if a Player 2 character was clicked
                     for i, option in enumerate(CHARACTER_OPTIONS):
                         x, y = player2_choice_positions[i]
-                        rect = pygame.Rect(x - 35, y - 35, 70, 70)
+                        rect = pygame.Rect(x - 50, y - 50, 100, 100)
 
                         if rect.collidepoint(mouse_pos):
                             if option["name"] not in player2_selection and len(player2_selection) < 2:
                                 player2_selection.append(option["name"])
-                                print(player2_selection)
                                 px, py = player2_positions[len(player2_selection) - 1]
                                 if option["name"] == 'Guerrier':
                                     self.player2_units.append(Guerrier(px, py, *option["stats"][2:], 'player2'))
@@ -162,6 +315,14 @@ class Game:
                                 if option["name"] == 'Magicien':
                                     self.player2_units.append(Magicien(px, py, *option["stats"][2:], 'player2'))
                                 if option["name"] == 'Assassin':
+                                    self.player2_units.append(Assassin(px, py, *option["stats"][2:], 'player2'))
+                                if option["name"] == 'Guerrier2':
+                                    self.player2_units.append(Guerrier(px, py, *option["stats"][2:], 'player2'))
+                                if option["name"] == 'Archer2':
+                                    self.player2_units.append(Archer(px, py, *option["stats"][2:], 'player2'))
+                                if option["name"] == 'Magicien2':
+                                    self.player2_units.append(Magicien(px, py, *option["stats"][2:], 'player2'))
+                                if option["name"] == 'Assassin2':
                                     self.player2_units.append(Assassin(px, py, *option["stats"][2:], 'player2'))
 
                     # Check if the Start button was clicked
@@ -341,7 +502,6 @@ class Game:
             text_y = menu_y + menu_height - 45  # Leave some padding from the bottom
             self.screen.blit(text_surface, (text_x, text_y))
 
-
     def flip_display(self, selected_unit=None, hovered_cell=None):
         self.screen.fill(BLACK)
 
@@ -364,7 +524,7 @@ class Game:
                         if (target_x, target_y) == (selected_unit.x, selected_unit.y):
                             continue
 
-                        if 0 <= target_x < GRID_SIZE and 0 <= target_y < GRID_SIZE:
+                        if 0 <= target_x < GRID_COLUMNS and 0 <= target_y < GRID_ROWS:
                             movement_range.add((target_x, target_y))
             
             purple_surface = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
@@ -385,11 +545,12 @@ class Game:
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))#, pygame.FULLSCREEN)
+    screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
     pygame.display.set_caption("Mon jeu de stratégie")
 
     game = Game(screen)
-    game.initialize_home_screen()
+    game.initialize_main_menu()
+    game.character_choice_screen()
 
     while True:
         game.handle_player1_turn()
