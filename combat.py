@@ -40,7 +40,6 @@ def combat_round(screen, attacker, defender):
 
     while running:
         screen.fill(BLACK)
-
         # Phase 1 : Annonce du combat
         display_text_centered(screen, f"Combat entre {attacker.team} et {defender.team} !", 50)
         display_info_panel(screen, [
@@ -49,6 +48,8 @@ def combat_round(screen, attacker, defender):
         ])
         pygame.display.flip()
         pygame.time.wait(2000)
+
+#Option utiliser capacité spéciale ici Dépendant du résultat
 
         # Phase 2 : Duel
         display_text_centered(screen, f"{attacker.team} attaque {defender.team} !", 50)
