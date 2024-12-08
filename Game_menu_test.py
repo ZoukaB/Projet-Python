@@ -1,42 +1,36 @@
 import pygame
 import random
-from unit_fullscreen import *
+from unitcopy import *
+from Guerrier import *
 
-# # Initialize Pygame to fetch display info
-# pygame.init()
-# screen_info = pygame.display.Info()
+# Constantes
+GRID_SIZE = 25
+CELL_SIZE = 25
+WIDTH = GRID_SIZE * CELL_SIZE
+HEIGHT = GRID_SIZE * CELL_SIZE
 
-# # Get the screen dimensions
-# SCREEN_WIDTH = screen_info.current_w
-# SCREEN_HEIGHT = screen_info.current_h
-
-# # Desired cell size (you can adjust this for larger or smaller cells)
-# CELL_SIZE = 30
-
-# # Calculate the number of columns and rows to ensure full coverage
-# GRID_COLUMNS = (SCREEN_WIDTH + CELL_SIZE +1 ) // CELL_SIZE  # Round up to cover full width
-# GRID_ROWS = (SCREEN_HEIGHT + CELL_SIZE + 1) // CELL_SIZE   # Round up to cover full height
-
-# # Calculate the exact grid width and height based on the number of columns and rows
-# WIDTH = GRID_COLUMNS * CELL_SIZE
-# HEIGHT = GRID_ROWS * CELL_SIZE
 
 class Game:
     def __init__(self, screen):
         self.screen = screen
-        self.player1_units = [
-            Unit(0, 0, 50, 4, 4, 4, 5, 4, 10,10, 'player1'),
-            Unit(1, 0, 1, 4, 4, 4, 5, 2, 8,8, 'player1'),
+
+        self.background_image = pygame.image.load("forest.jpg").convert()
+        # so the image is the same size as the screen
+        self.background_image = pygame.transform.scale(self.background_image, (WIDTH,HEIGHT))
+
+        self.player_units = [
+            Unit(0, 0, 4, 4, 4, 4, 5, 4, 10, 'player'),
+            Unit(1, 0, 1, 4, 4, 4, 5, 2, 10, 'player'),
             # Unit(3, 0, 1, 4, 4, 4, 5, 2, 10, 'player'),
             # Unit(4, 0, 1, 4, 4, 4, 5, 2, 10, 'player')
         ]
 
-        self.player2_units = [
-            Unit(6, 6, 50, 4, 4, 4, 5, 1, 6,6, 'player2'),
-            Unit(6, 5, 1, 4, 4, 4, 5, 1, 4,4, 'player2')
+        self.enemy_units = [
+            Unit(6, 6, 1, 4, 4, 4, 5, 1, 10, 'enemy'),
+            Unit(6, 5, 1, 4, 4, 4, 5, 1, 10, 'enemy')
         ]
 
-    def handle_player1_turn(self):
+    def handle_player_turn(self):
         selected_unit = None
         hovered_cell = None
         moved_units = []
@@ -46,82 +40,47 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
-                    
+
+
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     grid_x, grid_y = mouse_x // CELL_SIZE, mouse_y // CELL_SIZE
-
-                    # Select a unit if no unit is currently selected
-                    if not selected_unit:
-                        for unit in self.player1_units:
-                            if unit.x == grid_x and unit.y == grid_y and unit not in moved_units:
-                                selected_unit = unit
-                                selected_unit.is_selected = True
-                                break
-
-                    # Move the selected unit if one is selected
-                    elif selected_unit:
-                        dx = grid_x - selected_unit.x
-                        dy = grid_y - selected_unit.y
-
-                        if abs(dx) + abs(dy) <= selected_unit.mouvement:
-                            if selected_unit.move(dx, dy, self.player1_units + self.player2_units):
-                                selected_unit.is_selected = False
-                                moved_units.append(selected_unit)
-                                selected_unit = None
-
-                if event.type == pygame.MOUSEMOTION:
-                    mouse_x, mouse_y = pygame.mouse.get_pos()
-                    hovered_cell = (mouse_x // CELL_SIZE, mouse_y // CELL_SIZE)
-
-            if len(moved_units) == len(self.player1_units):
-                break  
-
-            self.flip_display(selected_unit, hovered_cell)
-    
-    def handle_player2_turn(self):
-        selected_unit = None
-        hovered_cell = None
-        moved_units = []
-
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
                     
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    mouse_x, mouse_y = pygame.mouse.get_pos()
-                    grid_x, grid_y = mouse_x // CELL_SIZE, mouse_y // CELL_SIZE
-
-                    # Select a unit if no unit is currently selected
                     if not selected_unit:
-                        for unit in self.player2_units:
+                        for unit in self.player_units:
                             if unit.x == grid_x and unit.y == grid_y and unit not in moved_units:
-                                selected_unit = unit
-                                selected_unit.is_selected = True
-                                break
+                             selected_unit = unit
+                             selected_unit.is_selected = True
+                            break
 
-                    # Move the selected unit if one is selected
                     elif selected_unit:
-                        dx = grid_x - selected_unit.x
-                        dy = grid_y - selected_unit.y
-
-                        if abs(dx) + abs(dy) <= selected_unit.mouvement:
-                            if selected_unit.move(dx, dy, self.player1_units + self.player2_units):
-                                selected_unit.is_selected = False
-                                moved_units.append(selected_unit)
-                                selected_unit = None
-
+                        if abs(grid_x - selected_unit.x) + abs(grid_y - selected_unit.y) <= selected_unit.mouvement:
+                            selected_unit.move(grid_x - selected_unit.x, grid_y - selected_unit.y)
+                            selected_unit.is_selected = False
+                            moved_units.append(selected_unit)
+                            selected_unit = None
+                
                 if event.type == pygame.MOUSEMOTION:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     hovered_cell = (mouse_x // CELL_SIZE, mouse_y // CELL_SIZE)
+                    
+                if len(moved_units) == len(self.player_units):
+                    break  
 
-            if len(moved_units) == len(self.player2_units):
-                break  
+                self.flip_display(selected_unit, hovered_cell)
+            
+    def handle_enemy_turn(self):
+        for enemy in self.enemy_units:
+            target = random.choice(self.player_units)
+            dx = 1 if enemy.x < target.x else -1 if enemy.x > target.x else 0
+            dy = 1 if enemy.y < target.y else -1 if enemy.y > target.y else 0
+            enemy.move(dx, dy)
 
-            self.flip_display(selected_unit, hovered_cell)      
-    
+            if abs(enemy.x - target.x) <= 1 and abs(enemy.y - target.y) <= 1:
+                enemy.attack(target)
+                if target.vie <= 0:
+                    self.player_units.remove(target)
+
     def draw_menu(self, selected_unit):
         """Draws the unit information menu in the lower-left corner."""
         menu_width = WIDTH // 2
@@ -142,10 +101,7 @@ class Game:
             # === First Column: Character Display and Health Bar ===
             char_center_x = menu_x + column_width // 2  # Center character in the first column
             char_center_y = menu_y + 35  # Position the character near the top
-            if selected_unit.team == 'player1':
-                pygame.draw.circle(self.screen, (0, 0, 255), (char_center_x, char_center_y), 15)  # Blue circle to represent the unit
-            else:
-                pygame.draw.circle(self.screen, (255, 0, 0), (char_center_x, char_center_y), 15)
+            pygame.draw.circle(self.screen, (0, 0, 255), (char_center_x, char_center_y), 15)  # Blue circle to represent the unit
 
             # Draw the health bar below the character
             health_bar_width = 80
@@ -154,7 +110,7 @@ class Game:
             health_bar_y = char_center_y + 30  # Position below the character
 
             # Calculate the width of the green health bar based on the unit's health
-            health_ratio = selected_unit.vie / selected_unit.max_vie # Assuming max health is 10
+            health_ratio = selected_unit.vie / 10  # Assuming max health is 10
             health_fill_width = int(health_ratio * health_bar_width)
 
             # Draw the health bar background (gray) and foreground (green)
@@ -195,14 +151,15 @@ class Game:
             self.screen.blit(text_surface, (text_x, text_y))
 
     def flip_display(self, selected_unit=None, hovered_cell=None):
-        self.screen.fill(BLACK)
+        #self.screen.fill(BLACK)
+        self.screen.blit(self.background_image, (0,0))
 
-        for x in range(0, WIDTH, CELL_SIZE):
-            for y in range(0, HEIGHT, CELL_SIZE):
-                rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
-                pygame.draw.rect(self.screen, WHITE, rect, 1)
+        #for x in range(0, WIDTH, CELL_SIZE):
+        #    for y in range(0, HEIGHT, CELL_SIZE):
+        #        rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
+        #        pygame.draw.rect(self.screen, WHITE, rect, 1)
 
-        for unit in self.player1_units + self.player2_units:
+        for unit in self.player_units + self.enemy_units:
             unit.draw(self.screen)
 
         if selected_unit:
@@ -216,7 +173,7 @@ class Game:
                         if (target_x, target_y) == (selected_unit.x, selected_unit.y):
                             continue
 
-                        if 0 <= target_x < GRID_COLUMNS and 0 <= target_y < GRID_ROWS:
+                        if 0 <= target_x < GRID_SIZE and 0 <= target_y < GRID_SIZE:
                             movement_range.add((target_x, target_y))
             
             purple_surface = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
@@ -237,14 +194,14 @@ class Game:
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Mon jeu de stratégie")
 
     game = Game(screen)
 
     while True:
-        game.handle_player1_turn()
-        game.handle_player2_turn()
+        game.handle_player_turn()
+        game.handle_enemy_turn()
 
 if __name__ == "__main__":
     main()
