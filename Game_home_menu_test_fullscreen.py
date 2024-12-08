@@ -20,6 +20,11 @@ CHARACTER_OPTIONS = [
 class Game:
     def __init__(self, screen):
         self.screen = screen
+
+        self.background_image = pygame.image.load("forest.jpg").convert()
+        # so the image is the same size as the screen
+        self.background_image = pygame.transform.scale(self.background_image, (WIDTH,HEIGHT))
+        
         self.player1_units = []
 
         self.player2_units = []
@@ -320,7 +325,8 @@ class Game:
 
 
     def flip_display(self, selected_unit=None, hovered_cell=None):
-        self.screen.fill(BLACK)
+        #self.screen.fill(BLACK)
+        self.screen.blit(self.background_image, (0,0))
 
         for x in range(0, WIDTH, CELL_SIZE):
             for y in range(0, HEIGHT, CELL_SIZE):
