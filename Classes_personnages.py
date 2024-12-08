@@ -6,17 +6,6 @@ class Warrior(Unit_new):
         super().__init__(0,0,4,6,4,4,6,3,3,5,5,'player')
         self.capacités = ['Boisson du guerrier, Cri de guerre']
         self.boisson_du_guerrier = 3
-    
-    def attack(self, target):
-        #30% de chance de doubler son attaque
-        pourcentage = random.randint(1,101)
-        if abs(self.x - target.x) <= 1 and abs(self.y - target.y) <= 1:
-            if pourcentage <=  30:
-                target.vie -= 2*self.attaque
-            else: 
-                target.vie -= self.attaque
-        else:
-            print("L'ennemi est trop loin pour pouvoir être attaqué")
         
     def boisson_du_guerrier(self,target):
         if self.boisson_du_guerrier > 0:
@@ -26,14 +15,16 @@ class Warrior(Unit_new):
             print("Vous n'avez plus de boisson du guerrier")
             
     def cri_de_guerre(self,target):
-        if abs(self.x - target.x) <= 3 and abs(self.y - target.y) <= 3: #incorporer affichage ??
+        if self.energie >= 4:
             if target.defense%2 != 0:
                 target.defense = (target.defense-1)/2
             else:
                 target.defense = target.defense/2
             self.energie -= 4
         else:
-            print("Impossible d'utiliser la capacite spéciale cri de guerre")
+            print("Jauge d'énergie trop faible pour utiliser cette capacité")
+    
+    #Dernier souffle ==> permet de forcément infliger des dégats lorsque le guerrier meurt
 
 class Magicien(Unit_new):
     def __init__(self):
@@ -41,29 +32,14 @@ class Magicien(Unit_new):
         self.capacités = ["Sort de guérison","Barrière de feu"]
         self.fire_barrier_strength = 0
     
-    def attack(self,target,other_targets):
-        #Peut lancer un sort jusqu'à 5 cases devant lui mais seulement dans la direction x
-        if (abs(self.x - target.x) <= 5 and abs(self.y - target.y) == 0) or (abs(self.x - target.x) == 0 and abs(self.y - target.y) <= 5):
-            target.vie -= self.attaque
-            for unit in other_targets:
-                if unit == target:
-                    continue
-                if abs(unit.x - target.x) <= 1 and abs(unit.y - target.y) <= 2:
-                    unit.vie -= self.attaque // 2 # Half damage for splash
+    def sort_de_guerison(self):
+        if self.energie >= 2:
+            self.energie -= 2
+            self.vie += 1
         else:
-            print("L'ennemi est trop loin pour pouvoir être attaqué")
+            print("Jauge d'énergie trop faible pour utiliser ce sort")
     
-    def sort_de_guerison(self,target):
-        #Se soigne d'1 pv et inflige des dégats directes 
-        if abs(self.x - target.x) <= 2 and abs(self.y - target.y) <= 2:
-            if self.energie >= 2:
-                self.energie -= 2
-                target.vie -= self.attaque 
-                self.vie += 1
-            else:
-                print("Jauge d'énergie trop faible pour utiliser ce sort")
-        else:
-            print("L'ennemi est trop loin pour pouvoir être attaqué")
+    #Si enemie autour de lui, boost le nombre de dès 
             
     def fire_barrier(self,orientation,screen):
         self.fire_barrier_strength = 3
@@ -96,35 +72,23 @@ class Archer(Unit_new):
     def __init__(self):
         super().__init__(0,0,6,4,2,3,4,2,2,5,5,'player')
         self.capacités = ["Flèche de guérison","Headshot"]
-        self.flèches_soigneuses = 3
-    
-    def attack(self,target):
-        #Peut tirer une flèche jusqu'à 5 cases devant lui mais seulement dans la direction x
-        if (abs(self.x - target.x) <= 5 and abs(self.y - target.y) == 0) or (abs(self.x - target.x) == 0 and abs(self.y - target.y) <= 5):
-            target.vie -= self.attaque
-        else:
-            print("L'ennemi est trop loin pour pouvoir être attaqué")
+        self.flèches_de_guerison = 3
     
     def fleche_de_guerison(self,target):
         #Tire un fleche qui soigne ses aliés 
-        if (abs(self.x - target.x) <= 5 and abs(self.y - target.y) == 0) or (abs(self.x - target.x) == 0 and abs(self.y - target.y) <= 5):
-            if self.flèches_soigneuses != 0:
-                self.flèches_soigneuses -= 1
-                target.vie += 5
-            else:
-                print("Vous n'avez plus de flèches de guérison")
+        if self.flèches_soigneuses != 0:
+            self.flèches_soigneuses -= 1
+            target.vie += 5
         else:
-            print("L'ennemi est trop loin pour pouvoir être attaqué")
+            print("Vous n'avez plus de flèches de guérison")
     
     def headshot(self,target):
-        if (abs(self.x - target.x) <= 5 and abs(self.y - target.y) == 0) or (abs(self.x - target.x) == 0 and abs(self.y - target.y) <= 5):
-            if self.energie >= 3:
-                self.energie -= 3
-                target.vie -= 10 
-            else:
-                print("Vous n'avez pas assez d'énergie pour cette attaque")
+        if self.energie >= 3:
+            self.energie -= 3
+            target.vie -= 10 
         else:
-            print("L'ennemi est trop loin pour pouvoir être attaqué")
+            print("Vous n'avez pas assez d'énergie pour cette attaque")
+    #Permet d'infliger des dégats même si le duel est perdu
         
 class Mineur(Unit_new):
     def __init__(self):

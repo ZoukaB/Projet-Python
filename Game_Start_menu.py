@@ -32,11 +32,11 @@ class Game:
             "Guerrier": pygame.image.load("Guerrier.jpg").convert_alpha(),
             "Archer": pygame.image.load("archer.jpg").convert_alpha(),
             "Magicien": pygame.image.load("magicien.jpg").convert_alpha(),
-            "Assassin": pygame.image.load("image.jpeg").convert_alpha(),
+            "Assassin": pygame.image.load("assassin.jpg").convert_alpha(),
             "Guerrier2": pygame.image.load("Guerrier.jpg").convert_alpha(),
             "Archer2": pygame.image.load("archer.jpg").convert_alpha(),
             "Magicien2": pygame.image.load("magicien.jpg").convert_alpha(),
-            "Assassin2": pygame.image.load("image.jpeg").convert_alpha(),
+            "Assassin2": pygame.image.load("assassin.jpg").convert_alpha(),
         }
      
     def draw_semi_transparent_background(self):
