@@ -22,6 +22,7 @@ class Game:
         self.screen = screen
         self.player1_units = []
         self.player2_units = []
+        self.reset_jeu = False  # Flag to indicate a reset
         
         # Load the background image (replace with the actual image path)
         self.background_image = pygame.image.load("background.jpg").convert()
@@ -42,7 +43,7 @@ class Game:
             "Magicien2": pygame.image.load("Images_persos/Wizard2.png").convert_alpha(),
             "Assassin2": pygame.image.load("Images_persos/Assasin2.png").convert_alpha(),
         }
-     
+          
     def draw_semi_transparent_background(self):
         """Draws a semi-transparent background image."""
         # Create a semi-transparent surface
@@ -103,7 +104,6 @@ class Game:
 
                     if start_button.collidepoint(mouse_pos):
                         running = False  # Proceed to the character choice menu
-                        self.character_choice_screen()
                         
             pygame.display.flip()
 
@@ -366,10 +366,10 @@ class Game:
 
             pygame.display.flip()
 
-    def reset_game_state(self):
+    def reset_game(self):
         """Resets the game state for a fresh start."""
         self.player1_units = []
-        self.player2_units = []
+        self.player2_units = [] 
 
     def handle_player1_turn(self):
         selected_unit = None
@@ -606,9 +606,9 @@ class Game:
 
                     # Check if "Home Screen" button was clicked
                     if home_button.collidepoint(mouse_pos):
-                        self.reset_game_state()  # Reset the game state
-                        self.initialize_main_menu()
-                        paused = False  # Exit the pause menu and return to home screen
+                        self.reset_game()  
+                        self.reset_jeu = True  # Set the reset flag to restart the main loop
+                        paused = False
 
                 if event.type == pygame.KEYDOWN:
                     # Press "Esc" to resume the game
@@ -663,15 +663,20 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
     pygame.display.set_caption("Mon jeu de stratégie")
-
-    game = Game(screen)
-    game.initialize_main_menu()
-    #game.character_choice_screen()
     
     while True:
-        game.handle_player1_turn()
-        game.handle_player2_turn()
+        game = Game(screen)
+        game.initialize_main_menu()  # Start at the main menu and character selection
+        game.character_choice_screen()
+        # After character selection, start the game loop
+        running = True
+        while running:
+            game.handle_player1_turn()
+            game.handle_player2_turn()
 
+            # Check if the game has been reset (e.g., when returning to the main menu)
+            if game.reset_flag:
+                running = False  # Exit the game loop to restart the main loop
 
 if __name__ == "__main__":
     main()
