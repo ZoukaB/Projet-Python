@@ -27,6 +27,10 @@ class Game:
         self.background_image = pygame.image.load("background.jpg").convert()
         self.background_image = pygame.transform.scale(self.background_image, (WIDTH, HEIGHT))
         
+        # Load background image for the board
+        self.BoardBackground = pygame.image.load("backgroundGame.png").convert()
+        self.BoardBackground = pygame.transform.scale(self.BoardBackground, (WIDTH,HEIGHT))
+
         # Load character images (replace with actual image paths)
         self.character_images = {
             "Guerrier": pygame.image.load("Images_persos/Warrior1.png").convert_alpha(),
@@ -614,12 +618,13 @@ class Game:
             pygame.display.flip()
 
     def flip_display(self, selected_unit=None, hovered_cell=None):
-        self.screen.fill(BLACK)
+        #self.screen.fill(BLACK)
+        self.screen.blit(self.BoardBackground, (0,0)) # Board Background
 
-        for x in range(0, WIDTH, CELL_SIZE):
-            for y in range(0, HEIGHT, CELL_SIZE):
-                rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
-                pygame.draw.rect(self.screen, WHITE, rect, 1)
+        #for x in range(0, WIDTH, CELL_SIZE):
+        #    for y in range(0, HEIGHT, CELL_SIZE):
+        #        rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
+        #        pygame.draw.rect(self.screen, WHITE, rect, 1)
 
         for unit in self.player1_units + self.player2_units:
             unit.draw(self.screen)
