@@ -29,14 +29,14 @@ class Game:
         
         # Load character images (replace with actual image paths)
         self.character_images = {
-            "Guerrier": pygame.image.load("Warrior1.png").convert_alpha(),
-            "Archer": pygame.image.load("Archer1.png").convert_alpha(),
-            "Magicien": pygame.image.load("Wizard1.png").convert_alpha(),
-            "Assassin": pygame.image.load("Assasin1.png").convert_alpha(),
-            "Guerrier2": pygame.image.load("Warrior2.png").convert_alpha(),
-            "Archer2": pygame.image.load("Archer2.png").convert_alpha(),
-            "Magicien2": pygame.image.load("Wizard2.png").convert_alpha(),
-            "Assassin2": pygame.image.load("Assasin2.png").convert_alpha(),
+            "Guerrier": pygame.image.load("Images_persos/Warrior1.png").convert_alpha(),
+            "Archer": pygame.image.load("Images_persos/Archer1.png").convert_alpha(),
+            "Magicien": pygame.image.load("Images_persos/Wizard1.png").convert_alpha(),
+            "Assassin": pygame.image.load("Images_persos/Assasin1.png").convert_alpha(),
+            "Guerrier2": pygame.image.load("Images_persos/Warrior2.png").convert_alpha(),
+            "Archer2": pygame.image.load("Images_persos/Archer2.png").convert_alpha(),
+            "Magicien2": pygame.image.load("Images_persos/Wizard2.png").convert_alpha(),
+            "Assassin2": pygame.image.load("Images_persos/Assasin2.png").convert_alpha(),
         }
      
     def draw_semi_transparent_background(self):
@@ -99,35 +99,47 @@ class Game:
 
                     if start_button.collidepoint(mouse_pos):
                         running = False  # Proceed to the character choice menu
-
+                        self.character_choice_screen()
+                        
             pygame.display.flip()
 
     def show_rules(self):
-        """Displays the game rules screen."""
-        font = pygame.font.Font(None, 28)
+        """Displays the game rules screen centered in the middle of the screen."""
+        font = pygame.font.Font(None, 32)  # Slightly larger font size for better readability
         back_button = pygame.Rect(WIDTH - 150, HEIGHT - 60, 120, 40)
+
+        # List of rules to display
+        rules_text_lines = [
+            "Règles du Jeu:",
+            "1. Chaque joueur choisit 2 personnages.",
+            "2. Les joueurs déplacent leurs unités à tour de rôle.",
+            "3. L'objectif est de vaincre toutes les unités adverses.",
+            "4. Chaque unité a des capacités uniques.",
+        ]
+
+        # Calculate the total height of the text block
+        line_height = font.get_height() + 10
+        total_text_height = len(rules_text_lines) * line_height
+
+        # Calculate starting y-position to center the text vertically
+        start_y = (HEIGHT - total_text_height) // 2
 
         running = True
         while running:
             self.screen.fill(BLACK)
 
-            # Display the rules text
-            rules_text_lines = [
-                "Règles du Jeu:",
-                "1. Chaque joueur choisit 2 personnages.",
-                "2. Les joueurs déplacent leurs unités à tour de rôle.",
-                "3. L'objectif est de vaincre toutes les unités adverses.",
-                "4. Chaque unité a des capacités uniques.",
-            ]
-
+            # Display the rules text centered
             for i, line in enumerate(rules_text_lines):
                 text_surface = font.render(line, True, WHITE)
-                self.screen.blit(text_surface, (50, 100 + i * 40))
+                text_x = (WIDTH - text_surface.get_width()) // 2  # Center horizontally
+                text_y = start_y + i * line_height  # Line spacing
+                self.screen.blit(text_surface, (text_x, text_y))
 
             # Draw back button
             pygame.draw.rect(self.screen, WHITE, back_button)
             back_text = font.render("Retour", True, BLACK)
-            self.screen.blit(back_text, (back_button.x + 20, back_button.y + 10))
+            self.screen.blit(back_text, (back_button.x + (back_button.width - back_text.get_width()) // 2,
+                                         back_button.y + (back_button.height - back_text.get_height()) // 2))
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -166,7 +178,8 @@ class Game:
             # Draw back button
             pygame.draw.rect(self.screen, WHITE, back_button)
             back_text = font.render("Retour", True, BLACK)
-            self.screen.blit(back_text, (back_button.x + 20, back_button.y + 10))
+            self.screen.blit(back_text, (back_button.x + (back_button.width - back_text.get_width()) // 2,
+                                         back_button.y + (back_button.height - back_text.get_height()) // 2))
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -184,6 +197,9 @@ class Game:
         # Font for button and text
         font = pygame.font.Font(None, 36)
         small_font = pygame.font.Font(None, 24)
+        
+        # Button to go back to the menu
+        back_button = pygame.Rect(WIDTH - 150, HEIGHT - 60, 120, 40)
 
         # Button for starting the game
         start_button = pygame.Rect(WIDTH // 2 - 62, HEIGHT - 70, 125, 50)
@@ -226,7 +242,7 @@ class Game:
             self.screen.blit(instructions, (WIDTH // 2 - instructions.get_width() // 2, 25))
 
             # Draw Player 1's character choices
-            player1_text = font.render("Player 1", True, GREEN)
+            player1_text = font.render("Player 1", True, BLUE)
             self.screen.blit(player1_text, (150 - player1_text.get_width() // 2, 50))
             for i, option in enumerate(CHARACTER_OPTIONS):
                 x, y = player1_choice_positions[i]
@@ -239,10 +255,10 @@ class Game:
 
                 # Highlight selection
                 if option["name"] in player1_selection:
-                    pygame.draw.rect(self.screen, GREEN, (x - 50, y - 50, 100, 100), 4)
+                    pygame.draw.rect(self.screen, BLUE, (x - 50, y - 50, 100, 100), 4)
 
             # Draw Player 2's character choices
-            player2_text = font.render("Player 2", True, BLUE)
+            player2_text = font.render("Player 2", True, RED)
             self.screen.blit(player2_text, (WIDTH - 200 - player2_text.get_width() // 2, 50))
             for i, option in enumerate(CHARACTER_OPTIONS):
                 x, y = player2_choice_positions[i]
@@ -255,13 +271,18 @@ class Game:
 
                 # Highlight selection
                 if option["name"] in player2_selection:
-                    pygame.draw.rect(self.screen, BLUE, (x - 50, y - 50, 100, 100), 4)
+                    pygame.draw.rect(self.screen, RED, (x - 50, y - 50, 100, 100), 4)
 
             # Draw the Start button
             pygame.draw.rect(self.screen, WHITE, start_button)
             start_text = font.render("Start", True, BLACK)
             self.screen.blit(start_text, (start_button.x + (start_button.width - start_text.get_width()) // 2,
                                           start_button.y + (start_button.height - start_text.get_height()) // 2))
+            # Draw back button
+            pygame.draw.rect(self.screen, WHITE, back_button)
+            back_text = font.render("Retour", True, BLACK)
+            self.screen.blit(back_text, (back_button.x + (back_button.width - back_text.get_width()) // 2,
+                                         back_button.y + (back_button.height - back_text.get_height()) // 2))
 
             # Event handling
             for event in pygame.event.get():
@@ -271,14 +292,17 @@ class Game:
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
-
+    
                     # Check if a Player 1 character was clicked
                     for i, option in enumerate(CHARACTER_OPTIONS):
                         x, y = player1_choice_positions[i]
                         rect = pygame.Rect(x - 50, y - 50, 100, 100)
 
                         if rect.collidepoint(mouse_pos):
-                            if option["name"] not in player1_selection and len(player1_selection) < 2:
+                            if option["name"] in player1_selection:  # Unselect if already selected
+                                player1_selection.remove(option["name"])
+                                self.player1_units.pop()  # Remove the last unit added
+                            elif option["name"] not in player1_selection and len(player1_selection) < 2:
                                 player1_selection.append(option["name"])
                                 px, py = player1_positions[len(player1_selection) - 1]
                                 if option["name"] == 'Guerrier':
@@ -305,7 +329,10 @@ class Game:
                         rect = pygame.Rect(x - 50, y - 50, 100, 100)
 
                         if rect.collidepoint(mouse_pos):
-                            if option["name"] not in player2_selection and len(player2_selection) < 2:
+                            if option["name"] in player2_selection:  # Unselect if already selected
+                                player2_selection.remove(option["name"])
+                                self.player2_units.pop()  # Remove the last unit added
+                            elif option["name"] not in player2_selection and len(player2_selection) < 2:
                                 player2_selection.append(option["name"])
                                 px, py = player2_positions[len(player2_selection) - 1]
                                 if option["name"] == 'Guerrier':
@@ -324,13 +351,21 @@ class Game:
                                     self.player2_units.append(Magicien(px, py, *option["stats"][2:], 'player2'))
                                 if option["name"] == 'Assassin2':
                                     self.player2_units.append(Assassin(px, py, *option["stats"][2:], 'player2'))
-
+                                    
+                    if back_button.collidepoint(mouse_pos):  
+                        self.initialize_main_menu()
+                        
                     # Check if the Start button was clicked
                     if start_button.collidepoint(mouse_pos):
                         if len(player1_selection) == 2 and len(player2_selection) == 2:
                             running = False  # Exit the home screen loop to start the game
 
             pygame.display.flip()
+
+    def reset_game_state(self):
+        """Resets the game state for a fresh start."""
+        self.player1_units = []
+        self.player2_units = []
 
     def handle_player1_turn(self):
         selected_unit = None
@@ -369,6 +404,10 @@ class Game:
                 if event.type == pygame.MOUSEMOTION:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     hovered_cell = (mouse_x // CELL_SIZE, mouse_y // CELL_SIZE)
+                    
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.pause_menu()
 
             if len(moved_units) == len(self.player1_units):
                 break  
@@ -413,6 +452,10 @@ class Game:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     hovered_cell = (mouse_x // CELL_SIZE, mouse_y // CELL_SIZE)
                     
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.pause_menu()
+                        
             if len(moved_units) == len(self.player2_units):
                 break  
 
@@ -440,6 +483,9 @@ class Game:
             char_center_y = menu_y + 60  # Position the character near the top
 
             unit_name = selected_unit.__class__.__name__
+            unit_team = selected_unit.team
+            if unit_team == "player2":
+                unit_name += '2'
             image = self.character_images.get(unit_name)
 
             if image:
@@ -502,6 +548,71 @@ class Game:
             text_y = menu_y + menu_height - 45  # Leave some padding from the bottom
             self.screen.blit(text_surface, (text_x, text_y))
 
+    def pause_menu(self):
+        """Displays the pause menu with options to resume or go back to the home screen."""
+        font = pygame.font.Font(None, 48)
+        button_font = pygame.font.Font(None, 36)
+
+        # Create buttons for "Resume" and "Home Screen"
+        button_width = 250
+        button_height = 60
+        button_spacing = 40
+
+        # Calculate button positions
+        resume_button = pygame.Rect(WIDTH // 2 - button_width // 2, HEIGHT // 2 - button_height - button_spacing, button_width, button_height)
+        home_button = pygame.Rect(WIDTH // 2 - button_width // 2, HEIGHT // 2 + button_spacing, button_width, button_height)
+
+        # Semi-transparent overlay
+        overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 150))  # Black with 150 alpha for transparency
+
+        paused = True
+        while paused:
+            # Draw the current game screen with the overlay
+            self.screen.blit(overlay, (0, 0))
+
+            # Draw the "Pause" title
+            pause_text = font.render("Game Paused", True, WHITE)
+            self.screen.blit(pause_text, (WIDTH // 2 - pause_text.get_width() // 2, HEIGHT // 4))
+
+            # Draw the "Resume" button
+            pygame.draw.rect(self.screen, WHITE, resume_button)
+            resume_text = button_font.render("Resume", True, BLACK)
+            self.screen.blit(resume_text, (resume_button.x + (resume_button.width - resume_text.get_width()) // 2,
+                                           resume_button.y + (resume_button.height - resume_text.get_height()) // 2))
+
+            # Draw the "Home Screen" button
+            pygame.draw.rect(self.screen, WHITE, home_button)
+            home_text = button_font.render("Home Screen", True, BLACK)
+            self.screen.blit(home_text, (home_button.x + (home_button.width - home_text.get_width()) // 2,
+                                         home_button.y + (home_button.height - home_text.get_height()) // 2))
+
+            # Event handling
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+
+                    # Check if "Resume" button was clicked
+                    if resume_button.collidepoint(mouse_pos):
+                        paused = False  # Resume the game
+
+                    # Check if "Home Screen" button was clicked
+                    if home_button.collidepoint(mouse_pos):
+                        self.reset_game_state()  # Reset the game state
+                        self.initialize_main_menu()
+                        paused = False  # Exit the pause menu and return to home screen
+
+                if event.type == pygame.KEYDOWN:
+                    # Press "Esc" to resume the game
+                    if event.key == pygame.K_ESCAPE:
+                        paused = False
+
+            pygame.display.flip()
+
     def flip_display(self, selected_unit=None, hovered_cell=None):
         self.screen.fill(BLACK)
 
@@ -550,11 +661,12 @@ def main():
 
     game = Game(screen)
     game.initialize_main_menu()
-    game.character_choice_screen()
-
+    #game.character_choice_screen()
+    
     while True:
         game.handle_player1_turn()
         game.handle_player2_turn()
+
 
 if __name__ == "__main__":
     main()

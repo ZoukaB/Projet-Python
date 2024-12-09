@@ -31,14 +31,14 @@ class Game:
         
         # Load character images (replace with actual image paths)
         self.character_images = {
-            "Guerrier": pygame.image.load("Guerrier.jpg").convert_alpha(),
-            "Archer": pygame.image.load("archer.jpg").convert_alpha(),
-            "Magicien": pygame.image.load("magicien.jpg").convert_alpha(),
-            "Assassin": pygame.image.load("assassin.jpg").convert_alpha(),
-            "Guerrier2": pygame.image.load("Guerrier.jpg").convert_alpha(),
-            "Archer2": pygame.image.load("archer.jpg").convert_alpha(),
-            "Magicien2": pygame.image.load("magicien.jpg").convert_alpha(),
-            "Assassin2": pygame.image.load("assassin.jpg").convert_alpha(),
+            "Guerrier": pygame.image.load("Images_persos/Warrior1.png").convert_alpha(),
+            "Archer": pygame.image.load("Images_persos/Archer1.png").convert_alpha(),
+            "Magicien": pygame.image.load("Images_persos/Wizard1.png").convert_alpha(),
+            "Assassin": pygame.image.load("Images_persos/Assasin1.png").convert_alpha(),
+            "Guerrier2": pygame.image.load("Images_persos/Warrior2.png").convert_alpha(),
+            "Archer2": pygame.image.load("Images_persos/Archer2.png").convert_alpha(),
+            "Magicien2": pygame.image.load("Images_persos/Wizard2.png").convert_alpha(),
+            "Assassin2": pygame.image.load("Images_persos/Assasin2.png").convert_alpha(),
         }
         
     def initialize_home_screen(self):
@@ -301,6 +301,9 @@ class Game:
             char_center_y = menu_y + 60  # Position the character near the top
 
             unit_name = selected_unit.__class__.__name__
+            unit_team = selected_unit.team
+            if unit_team == "player2":
+                unit_name += '2'
             image = self.character_images.get(unit_name)
 
             if image:
