@@ -18,18 +18,61 @@ CHARACTER_OPTIONS = [
 ]
 # A terme, remplacer par vraies statistiques des personnages dans la fonction remplacer Unit par nos classes Personnages
 
+# Define objects list
+OBJECT_TYPES = ['piedra']
+
+class GameObject:
+    def __init__(self, x, y, obj_type):
+        self.x = x
+        self.y = y
+        self.obj_type = obj_type  # Object type: 'rock', 'water', etc.
+        
+        # Upload image of the object
+        if obj_type == "piedra":
+            try:
+                self.image = pygame.image.load("rock.png")  # Make sure the image is in the folder
+                self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))  # Adjust size 
+                self.rect = self.image.get_rect(topleft=(self.x * CELL_SIZE, self.y * CELL_SIZE))
+            except pygame.error as e:
+                print(f"Error uploading image for type {obj_type}: {e}")
+        
+        # If the image doesn't upload, configure image or error
+        if not self.image:
+            self.image = pygame.Surface((CELL_SIZE, CELL_SIZE))  # Creates a default surface
+            self.image.fill((255, 0, 0))  # Error sign (in red)
+            self.rect = self.image.get_rect(topleft=(self.x * CELL_SIZE, self.y * CELL_SIZE))
+
+    def draw(self, screen):
+        """Draw object in the screen"""
+        if self.image:  # Verify image is uploaded
+            screen.blit(self.image, (self.x * CELL_SIZE, self.y * CELL_SIZE))
+    
+    def is_occupied(self):
+        """Verify if the object is in the cell"""
+        return True  # Always True because the rocks occupies a cell
+    
 class Game:
     def __init__(self, screen):
         self.screen = screen
-
+        self.player1_units = []
+        self.player2_units = []
+        
         self.background_image = pygame.image.load("map.png").convert()
         # so the image is the same size as the screen
         self.background_image = pygame.transform.scale(self.background_image, (WIDTH,HEIGHT))
-
     
-        self.player1_units = []
+        self.objects = []  # List to store objects
 
-        self.player2_units = []
+        self.generate_objects()  # Call function that generates objects
+
+    def generate_objects(self):
+        """Generates random objects in the map."""
+        for _ in range(10):  # Number of objects
+            x, y = random.randint(0, GRID_SIZE - 1), random.randint(0, GRID_SIZE - 1)
+            obj_type = random.choice(OBJECT_TYPES)  # Choose random object from the list
+            new_object = GameObject(x, y, obj_type)
+            self.objects.append(new_object)
+
         
                     # Load and display the unit's image based on its class name
         self. character_images = {
@@ -349,46 +392,47 @@ class Game:
 
 
     def flip_display(self, selected_unit=None, hovered_cell=None):
-        #self.screen.fill(BLACK)
-        self.screen.blit(self.background_image, (0,0))
+    # First, draw the background
+     self.screen.blit(self.background_image, (0, 0))  # Adjust position if necessary
 
-        #for x in range(0, WIDTH, CELL_SIZE):
-        #    for y in range(0, HEIGHT, CELL_SIZE):
-        #        rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
-        #        pygame.draw.rect(self.screen, WHITE, rect, 1)
+    # Draw the units
+     for unit in self.player1_units + self.player2_units:
+        unit.draw(self.screen)
 
-        for unit in self.player1_units + self.player2_units:
-            unit.draw(self.screen)
+     if selected_unit:
+        movement_range = set()
 
-        if selected_unit:
-            movement_range = set()
+        for dx in range(-selected_unit.mouvement, selected_unit.mouvement + 1):
+            for dy in range(-selected_unit.mouvement, selected_unit.mouvement + 1):
+                if abs(dx) + abs(dy) <= selected_unit.mouvement:
+                    target_x, target_y = selected_unit.x + dx, selected_unit.y + dy
 
-            for dx in range(-selected_unit.mouvement, selected_unit.mouvement + 1):
-                for dy in range(-selected_unit.mouvement, selected_unit.mouvement + 1):
-                    if abs(dx) + abs(dy) <= selected_unit.mouvement:
-                        target_x, target_y = selected_unit.x + dx, selected_unit.y + dy
+                    if (target_x, target_y) == (selected_unit.x, selected_unit.y):
+                        continue
 
-                        if (target_x, target_y) == (selected_unit.x, selected_unit.y):
-                            continue
+                    if 0 <= target_x < GRID_SIZE and 0 <= target_y < GRID_SIZE:
+                        movement_range.add((target_x, target_y))
+        
+        purple_surface = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
+        purple_surface.fill((128, 100, 128, 128))
+        
+        for cell in movement_range:
+            rect = pygame.Rect(cell[0] * CELL_SIZE, cell[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+            self.screen.blit(purple_surface, rect)
 
-                        if 0 <= target_x < GRID_SIZE and 0 <= target_y < GRID_SIZE:
-                            movement_range.add((target_x, target_y))
-            
-            purple_surface = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
-            purple_surface.fill((128, 100, 128, 128))
-            
-            for cell in movement_range:
-                rect = pygame.Rect(cell[0] * CELL_SIZE, cell[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-                self.screen.blit(purple_surface, rect)
+        if hovered_cell in movement_range:
+            rect = pygame.Rect(hovered_cell[0] * CELL_SIZE, hovered_cell[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+            pygame.draw.rect(self.screen, (200, 160, 255), rect)
 
-            if hovered_cell in movement_range:
-                rect = pygame.Rect(hovered_cell[0] * CELL_SIZE, hovered_cell[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-                pygame.draw.rect(self.screen, (200, 160, 255), rect)
+    # Draw the menu in the lower-left corner
+     self.draw_menu(selected_unit)
 
-        # Draw the menu in the lower-left corner
-        self.draw_menu(selected_unit)
+    # Draw objects (stones, fire, water, etc.)
+     for obj in self.objects:
+        obj.draw(self.screen)
 
-        pygame.display.flip()
+    # Move pygame.display.flip() outside of all loops, at the end of the method
+     pygame.display.flip()
 
 def main():
     pygame.init()
