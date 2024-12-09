@@ -29,14 +29,14 @@ class Game:
         
         # Load character images (replace with actual image paths)
         self.character_images = {
-            "Guerrier": pygame.image.load("Guerrier.jpg").convert_alpha(),
-            "Archer": pygame.image.load("archer.jpg").convert_alpha(),
-            "Magicien": pygame.image.load("magicien.jpg").convert_alpha(),
-            "Assassin": pygame.image.load("assassin.jpg").convert_alpha(),
-            "Guerrier2": pygame.image.load("Guerrier.jpg").convert_alpha(),
-            "Archer2": pygame.image.load("archer.jpg").convert_alpha(),
-            "Magicien2": pygame.image.load("magicien.jpg").convert_alpha(),
-            "Assassin2": pygame.image.load("assassin.jpg").convert_alpha(),
+            "Guerrier": pygame.image.load("Warrior1.png").convert_alpha(),
+            "Archer": pygame.image.load("Archer1.png").convert_alpha(),
+            "Magicien": pygame.image.load("Wizard1.png").convert_alpha(),
+            "Assassin": pygame.image.load("Assasin1.png").convert_alpha(),
+            "Guerrier2": pygame.image.load("Warrior2.png").convert_alpha(),
+            "Archer2": pygame.image.load("Archer2.png").convert_alpha(),
+            "Magicien2": pygame.image.load("Wizard2.png").convert_alpha(),
+            "Assassin2": pygame.image.load("Assasin2.png").convert_alpha(),
         }
      
     def draw_semi_transparent_background(self):
