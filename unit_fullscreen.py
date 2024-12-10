@@ -12,9 +12,8 @@ SCREEN_HEIGHT = screen_info.current_h
 
 # Desired cell size (you can adjust this for larger or smaller cells)
 CELL_SIZE = 30
-
 # Calculate the number of columns and rows to ensure full coverage
-GRID_COLUMNS =ceil((SCREEN_WIDTH + CELL_SIZE ) / CELL_SIZE)  # Round up to cover full width
+GRID_COLUMNS =ceil((SCREEN_WIDTH + CELL_SIZE ) / CELL_SIZE)  # Round up to cover full widthD
 GRID_ROWS =ceil((SCREEN_HEIGHT + CELL_SIZE) / CELL_SIZE) 
 
 # Calculate the exact grid width and height based on the number of columns and rows
