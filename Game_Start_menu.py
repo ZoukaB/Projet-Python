@@ -100,95 +100,167 @@ class Game:
         selected_unit = None
         hovered_cell = None
         moved_units = []
+        proposed_x = None
+        proposed_y = None
+
+        # Function to select the next unmoved unit automatically
+        def select_next_unit():
+            for unit in self.player1_units:
+                if unit not in moved_units:
+                    unit.is_selected = True
+                    return unit
+            return None  # No unmoved units remain
+
+        # Initially select the first unmoved unit automatically
+        selected_unit = select_next_unit()
+        if selected_unit:
+            proposed_x, proposed_y = selected_unit.x, selected_unit.y
+            hovered_cell = (proposed_x, proposed_y)
 
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
-                    
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    mouse_x, mouse_y = pygame.mouse.get_pos()
-                    grid_x, grid_y = mouse_x // CELL_SIZE, mouse_y // CELL_SIZE
 
-                    # Select a unit if no unit is currently selected
-                    if not selected_unit:
-                        for unit in self.player1_units:
-                            if unit.x == grid_x and unit.y == grid_y and unit not in moved_units:
-                                selected_unit = unit
-                                selected_unit.is_selected = True
-                                break
-
-                    # Move the selected unit if one is selected
-                    elif selected_unit:
-                        dx = grid_x - selected_unit.x
-                        dy = grid_y - selected_unit.y
-
-                        if abs(dx) + abs(dy) <= selected_unit.mouvement:
-                            if selected_unit.move(dx, dy, self.player1_units + self.player2_units):
-                                selected_unit.is_selected = False
-                                moved_units.append(selected_unit)
-                                selected_unit = None
-
-                if event.type == pygame.MOUSEMOTION:
-                    mouse_x, mouse_y = pygame.mouse.get_pos()
-                    hovered_cell = (mouse_x // CELL_SIZE, mouse_y // CELL_SIZE)
-                    
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.pause_menu()
 
+                    # Only handle movement keys if we have a selected unit
+                    if selected_unit:
+                        dx, dy = 0, 0
+                        if event.key == pygame.K_UP:
+                            dy = -1
+                        elif event.key == pygame.K_DOWN:
+                            dy = 1
+                        elif event.key == pygame.K_LEFT:
+                            dx = -1
+                        elif event.key == pygame.K_RIGHT:
+                            dx = 1
+                        elif event.key == pygame.K_SPACE:
+                            # Confirm the move if it's within range and valid
+                            final_dx = proposed_x - selected_unit.x
+                            final_dy = proposed_y - selected_unit.y
+                            if abs(final_dx) + abs(final_dy) <= selected_unit.mouvement:
+                                if selected_unit.move(final_dx, final_dy, self.player1_units + self.player2_units):
+                                    selected_unit.is_selected = False
+                                    moved_units.append(selected_unit)
+                                    # Select next unit automatically
+                                    selected_unit = select_next_unit()
+                                    if selected_unit:
+                                        proposed_x, proposed_y = selected_unit.x, selected_unit.y
+                                        hovered_cell = (proposed_x, proposed_y)
+                                    else:
+                                        # No more units to move
+                                        break
+
+                        # If the player pressed an arrow key, update the proposed cell position
+                        if dx != 0 or dy != 0 and selected_unit is not None:
+                            new_x = proposed_x + dx
+                            new_y = proposed_y + dy
+                            # Check if within movement range
+                            if (abs(new_x - selected_unit.x) + abs(new_y - selected_unit.y)) <= selected_unit.mouvement:
+                                # Also check if within grid boundaries
+                                if 0 <= new_x < GRID_COLUMNS and 0 <= new_y < GRID_ROWS:
+                                    proposed_x, proposed_y = new_x, new_y
+                                    hovered_cell = (proposed_x, proposed_y)
+
+                if event.type == pygame.MOUSEMOTION:
+                    # If no unit selected, just update hovered cell for UI feedback
+                    if not selected_unit:
+                        mouse_x, mouse_y = pygame.mouse.get_pos()
+                        hovered_cell = (mouse_x // CELL_SIZE, mouse_y // CELL_SIZE)
+
+            # If all units have moved, end the turn
             if len(moved_units) == len(self.player1_units):
-                break  
+                break
 
             self.display.flip_display(selected_unit, hovered_cell)
+
     
     def handle_player2_turn(self):
         selected_unit = None
         hovered_cell = None
         moved_units = []
+        proposed_x = None
+        proposed_y = None
+
+        # Function to select the next unmoved unit automatically
+        def select_next_unit():
+            for unit in self.player2_units:
+                if unit not in moved_units:
+                    unit.is_selected = True
+                    return unit
+            return None  # No unmoved units remain
+
+        # Initially select the first unmoved unit automatically
+        selected_unit = select_next_unit()
+        if selected_unit:
+            proposed_x, proposed_y = selected_unit.x, selected_unit.y
+            hovered_cell = (proposed_x, proposed_y)
 
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
-                    
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    mouse_x, mouse_y = pygame.mouse.get_pos()
-                    grid_x, grid_y = mouse_x // CELL_SIZE, mouse_y // CELL_SIZE
 
-                    # Select a unit if no unit is currently selected
-                    if not selected_unit:
-                        for unit in self.player2_units:
-                            if unit.x == grid_x and unit.y == grid_y and unit not in moved_units:
-                                selected_unit = unit
-                                selected_unit.is_selected = True
-                                break
-
-                    # Move the selected unit if one is selected
-                    elif selected_unit:
-                        dx = grid_x - selected_unit.x
-                        dy = grid_y - selected_unit.y
-
-                        if abs(dx) + abs(dy) <= selected_unit.mouvement:
-                            if selected_unit.move(dx, dy, self.player1_units + self.player2_units):
-                                selected_unit.is_selected = False
-                                moved_units.append(selected_unit)
-                                selected_unit = None
-
-                if event.type == pygame.MOUSEMOTION:
-                    mouse_x, mouse_y = pygame.mouse.get_pos()
-                    hovered_cell = (mouse_x // CELL_SIZE, mouse_y // CELL_SIZE)
-                    
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.pause_menu()
-                        
-            if len(moved_units) == len(self.player2_units):
-                break  
 
-            self.display.flip_display(selected_unit, hovered_cell)      
+                    # Only handle movement keys if we have a selected unit
+                    if selected_unit:
+                        dx, dy = 0, 0
+                        if event.key == pygame.K_UP:
+                            dy = -1
+                        elif event.key == pygame.K_DOWN:
+                            dy = 1
+                        elif event.key == pygame.K_LEFT:
+                            dx = -1
+                        elif event.key == pygame.K_RIGHT:
+                            dx = 1
+                        elif event.key == pygame.K_SPACE:
+                            # Confirm the move if it's within range and valid
+                            final_dx = proposed_x - selected_unit.x
+                            final_dy = proposed_y - selected_unit.y
+                            if abs(final_dx) + abs(final_dy) <= selected_unit.mouvement:
+                                if selected_unit.move(final_dx, final_dy, self.player1_units + self.player2_units):
+                                    selected_unit.is_selected = False
+                                    moved_units.append(selected_unit)
+                                    # Select next unit automatically
+                                    selected_unit = select_next_unit()
+                                    if selected_unit:
+                                        proposed_x, proposed_y = selected_unit.x, selected_unit.y
+                                        hovered_cell = (proposed_x, proposed_y)
+                                    else:
+                                        # No more units to move
+                                        break
+
+                        # If the player pressed an arrow key, update the proposed cell position
+                        if dx != 0 or dy != 0 and selected_unit is not None:
+                            new_x = proposed_x + dx
+                            new_y = proposed_y + dy
+                            # Check if within movement range
+                            if (abs(new_x - selected_unit.x) + abs(new_y - selected_unit.y)) <= selected_unit.mouvement:
+                                # Also check if within grid boundaries
+                                if 0 <= new_x < GRID_COLUMNS and 0 <= new_y < GRID_ROWS:
+                                    proposed_x, proposed_y = new_x, new_y
+                                    hovered_cell = (proposed_x, proposed_y)
+
+                if event.type == pygame.MOUSEMOTION:
+                    # If no unit selected, just update hovered cell for UI feedback
+                    if not selected_unit:
+                        mouse_x, mouse_y = pygame.mouse.get_pos()
+                        hovered_cell = (mouse_x // CELL_SIZE, mouse_y // CELL_SIZE)
+
+            # If all units have moved, end the turn
+            if len(moved_units) == len(self.player2_units):
+                break
+
+            self.display.flip_display(selected_unit, hovered_cell)
+     
 
 def main():
     pygame.init()
