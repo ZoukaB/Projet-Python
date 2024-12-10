@@ -177,7 +177,6 @@ class Game:
                 break
 
             self.display.flip_display(selected_unit, hovered_cell)
-
     
     def handle_player2_turn(self):
         selected_unit = None
@@ -261,7 +260,6 @@ class Game:
 
             self.display.flip_display(selected_unit, hovered_cell)
      
-
 def main():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
