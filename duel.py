@@ -4,10 +4,16 @@ class Character:
     """
     Classe représentant un personnage en combat.
     """
-    def __init__(self, name, attaque, combat):
+    def __init__(self, name, attaque, combat, force, defense, vie):
         self.name = name  # Nom du personnage
         self.attaque = attaque  # Nombre de dés à lancer
         self.combat = combat  # Valeur de combat
+        self.force = force  # Valeur de force
+        self.defense = defense  # Valeur de défense
+        self.vie = vie  # Points de vie restants
+        self.x = 0  # Position X sur la carte
+        self.y = 0  # Position Y sur la carte
+
 
 def roll_dice(num_dice):
     """
