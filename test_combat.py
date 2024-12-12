@@ -1,168 +1,140 @@
 import pygame
-from duel import Character, roll_dice, duel_phase
+from duel import roll_dice, duel_phase
 from wound import attempt_wound, get_wound_threshold
 
 pygame.init()
 
 # Dimensions de l'écran
-LARGEUR_ECRAN, HAUTEUR_ECRAN = 800, 600
-TAILLE_CASE = 50
-MAP_LIGNES, MAP_COLONNES = HAUTEUR_ECRAN // TAILLE_CASE, LARGEUR_ECRAN // TAILLE_CASE
+SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
 
 # Couleurs
-BLANC = (255, 255, 255)
-NOIR = (0, 0, 0)
-ROUGE = (255, 0, 0)
-BLEU = (0, 0, 255)
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
 
 # Polices
 font = pygame.font.Font(None, 36)
 
+# Initialisation de la fenêtre Pygame
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Test Combat")
+
 # Charger les images des dés
-def charger_images_des(chemin_base, joueur):
-    images_des = {}
+def load_dice_images(base_path, player_name):
+    images = {}
     for i in range(1, 7):
-        chemin_image = f"{chemin_base}/{joueur}/{i}.jpg"
-        images_des[i] = pygame.image.load(chemin_image)
-    return images_des
+        path = f"{base_path}/{player_name}/{i}.jpg"
+        images[i] = pygame.image.load(path).convert_alpha()
+    return images
 
-CHEMIN_IMAGES = "dice_images"
-images_des_joueur_a = charger_images_des(CHEMIN_IMAGES, "dice_player_a")
-images_des_joueur_b = charger_images_des(CHEMIN_IMAGES, "dice_player_b")
+DICE_IMAGES_PLAYER_A = load_dice_images("dice_images", "dice_player_a")
+DICE_IMAGES_PLAYER_B = load_dice_images("dice_images", "dice_player_b")
 
-
-def diviser_texte(message, largeur_max):
-    mots = message.split(" ")
-    lignes = []
-    ligne = ""
-    for mot in mots:
-        if font.size(ligne + mot)[0] < largeur_max:
-            ligne += mot + " "
-        else:
-            lignes.append(ligne)
-            ligne = mot + " "
-    lignes.append(ligne)
-    return lignes
-
-# message centré dans un encadré
-def afficher_message(ecran, message, decalage_y=0):
-    ecran.fill(NOIR, (0, HAUTEUR_ECRAN - 150, LARGEUR_ECRAN, 150))
-    lignes = diviser_texte(message, LARGEUR_ECRAN - 20)
-    y_offset = HAUTEUR_ECRAN - 140
-    for ligne in lignes:
-        surface_texte = font.render(ligne, True, BLANC)
-        rect_texte = surface_texte.get_rect(center=(LARGEUR_ECRAN // 2, y_offset))
-        ecran.blit(surface_texte, rect_texte)
-        y_offset += 30
+def display_message(screen, message, y_offset=0):
+    """Affiche un message au centre de l'écran avec un décalage vertical."""
+    screen.fill(BLACK, (0, SCREEN_HEIGHT - 150, SCREEN_WIDTH, 150))  # Efface le bas de l'écran
+    text_surface = font.render(message, True, WHITE)
+    text_rect = text_surface.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 100 + y_offset))
+    screen.blit(text_surface, text_rect)
     pygame.display.flip()
 
-# les résultats des dés avec les images
-def afficher_resultats_des(ecran, resultats_des, images_des, y_depart):
-    espacement_horizontal = 150
-    x_depart = (LARGEUR_ECRAN - (len(resultats_des) * espacement_horizontal)) // 2
-    for i, resultat in enumerate(resultats_des):
-        ecran.blit(images_des[resultat], (x_depart + i * espacement_horizontal, y_depart))
+def display_dice(screen, rolls, images, y_position):
+    """Affiche les dés pour un joueur."""
+    screen.fill(BLACK, (0, y_position - 50, SCREEN_WIDTH, 200))  # Efface la zone des dés
+    spacing = 120  # Augmenter l'espacement horizontal entre les dés
+    x_start = (SCREEN_WIDTH - len(rolls) * spacing) // 2  # Centrer les dés avec l'espacement ajusté
+    for i, roll in enumerate(rolls):
+        screen.blit(images[roll], (x_start + i * spacing, y_position))
     pygame.display.flip()
 
-# un appui sur une touche (par défaut Espace)
-def attendre_touche(touche=pygame.K_SPACE):
+def wait_for_space():
+    """Attend que l'utilisateur appuie sur la touche Espace pour continuer."""
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == touche:
-                    return
-                if event.key == pygame.K_ESCAPE:  # Quitter avec Échap
-                    pygame.quit()
-                    exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                return
 
-# Dessiner la carte
-def dessiner_carte(ecran, joueur_a, joueur_b):
-    ecran.fill(BLANC)
-    for ligne in range(MAP_LIGNES):
-        for colonne in range(MAP_COLONNES):
-            rect = pygame.Rect(colonne * TAILLE_CASE, ligne * TAILLE_CASE, TAILLE_CASE, TAILLE_CASE)
-            pygame.draw.rect(ecran, NOIR, rect, 1)
-    # Dessiner les joueurs
-    pygame.draw.rect(ecran, ROUGE, (joueur_a.x * TAILLE_CASE, joueur_a.y * TAILLE_CASE, TAILLE_CASE, TAILLE_CASE))
-    pygame.draw.rect(ecran, BLEU, (joueur_b.x * TAILLE_CASE, joueur_b.y * TAILLE_CASE, TAILLE_CASE, TAILLE_CASE))
-    # Afficher "Combat"
-    texte_combat = font.render("Combat !", True, ROUGE)
-    ecran.blit(texte_combat, (LARGEUR_ECRAN // 2 - 50, 10))
+def test_combat(screen, char1, char2):
+    """Simule un combat entre deux personnages."""
+    # Efface l'écran
+    screen.fill(BLACK)
     pygame.display.flip()
 
-# Fonction principale de simulation de combat. ZECA c'est là que tu dois modifier les stats et tester les capacités !!!
-def test_combat():
-    # Configuration de l'écran
-    ecran = pygame.display.set_mode((LARGEUR_ECRAN, HAUTEUR_ECRAN))
-    pygame.display.set_caption("Test Combat")
-
-    # Création des personnages
-    joueur_a = Character(name="Guerrier A", attaque=4, combat=6, force=4, defense=5, vie=10)
-    joueur_b = Character(name="Guerrier B", attaque=3, combat=5, force=3, defense=4, vie=8)
-
-    # Placement des joueurs sur la carte
-    joueur_a.x, joueur_a.y = 5, 5
-    joueur_b.x, joueur_b.y = 5, 6
-
-    # la carte initiale
-    dessiner_carte(ecran, joueur_a, joueur_b)
+    # Affiche les combattants
+    display_message(screen, f"Combat : {char1.name} VS {char2.name}")
+    wait_for_space()
 
     # Phase 1 : Duel
-    afficher_message(ecran, f"{joueur_a.name} (Joueur A), lancez {joueur_a.attaque} dés. Appuyez sur espace.")
-    attendre_touche()
-    resultats_a = roll_dice(joueur_a.attaque)
-    afficher_message(ecran, f"Résultat : {resultats_a}")
-    afficher_resultats_des(ecran, resultats_a, images_des_joueur_a, HAUTEUR_ECRAN - 110)
-    attendre_touche()
+    display_message(screen, f"{char1.name} lance {char1.attaque} dés.")
+    wait_for_space()
+    rolls_char1 = roll_dice(char1.attaque)
+    display_dice(screen, rolls_char1, DICE_IMAGES_PLAYER_A, SCREEN_HEIGHT - 300)  # Descend les dés légèrement plus haut
+    display_message(screen, f"Résultats des dés : {rolls_char1}")
+    wait_for_space()
+    screen.fill(BLACK)  # Efface les dés après appui sur espace
+    pygame.display.flip()
 
-    afficher_message(ecran, f"{joueur_b.name} (Joueur B), lancez {joueur_b.attaque} dés. Appuyez sur espace.")
-    attendre_touche()
-    resultats_b = roll_dice(joueur_b.attaque)
-    afficher_message(ecran, f"Résultat : {resultats_b}")
-    afficher_resultats_des(ecran, resultats_b, images_des_joueur_b, HAUTEUR_ECRAN - 110)
-    attendre_touche()
+    display_message(screen, f"{char2.name} lance {char2.attaque} dés.")
+    wait_for_space()
+    rolls_char2 = roll_dice(char2.attaque)
+    display_dice(screen, rolls_char2, DICE_IMAGES_PLAYER_B, SCREEN_HEIGHT - 300)  # Même positionnement que pour le joueur 1
+    display_message(screen, f"Résultats des dés : {rolls_char2}")
+    wait_for_space()
+    screen.fill(BLACK)  # Efface les dés après appui sur espace
+    pygame.display.flip()
 
-    # Déterminer le gagnant du duel
-    resultat = duel_phase(joueur_a, joueur_b)
-
-    if resultat == "A":
-        gagnant, perdant = joueur_a, joueur_b
-        afficher_message(ecran, f"{gagnant.name} remporte le duel !")
-    elif resultat == "B":
-        gagnant, perdant = joueur_b, joueur_a
-        afficher_message(ecran, f"{gagnant.name} remporte le duel !")
+    # Détermine le vainqueur du duel
+    duel_result = duel_phase(char1, char2)
+    if duel_result == "A":
+        attacker, defender = char1, char2
+        display_message(screen, f"{attacker.name} remporte le duel !")
+    elif duel_result == "B":
+        attacker, defender = char2, char1
+        display_message(screen, f"{attacker.name} remporte le duel !")
     else:
-        afficher_message(ecran, "Le duel est un match nul.")
-        attendre_touche()
-        return
+        display_message(screen, "Le duel est un match nul.")
+        wait_for_space()
+        return  # Le combat s'arrête si le duel est un match nul
 
-    attendre_touche()
+    wait_for_space()
 
-    # Phase 2 : Blessures
-    seuil_blessure = get_wound_threshold(gagnant.force, perdant.defense)
-    afficher_message(ecran, f"{gagnant.name}, lancez {gagnant.attaque} dés pour blesser. Vous devez faire {seuil_blessure}+ pour infliger une blessure.")
-    attendre_touche()
-    resultats_blessure = roll_dice(gagnant.attaque)
-    afficher_message(ecran, f"Résultats des dés : {resultats_blessure}")
-    afficher_resultats_des(ecran, resultats_blessure, images_des_joueur_a if gagnant == joueur_a else images_des_joueur_b, HAUTEUR_ECRAN - 110)
-    attendre_touche()
+    # Phase 2 : Tentative de blessure
+    wound_threshold = get_wound_threshold(attacker.force, defender.defense)
+    display_message(
+        screen,
+        f"{attacker.name} tente de blesser {defender.name}. Seuil pour blesser : {wound_threshold}+."
+    )
+    wait_for_space()
+    rolls_wound = roll_dice(attacker.attaque)
+    display_dice(screen, rolls_wound, DICE_IMAGES_PLAYER_A if attacker == char1 else DICE_IMAGES_PLAYER_B, SCREEN_HEIGHT - 300)
+    display_message(screen, f"Résultats des dés : {rolls_wound}")
+    wait_for_space()
+    screen.fill(BLACK)  # Efface les dés après appui sur espace
+    pygame.display.flip()
 
-    blessures, statut = attempt_wound(gagnant, perdant)
-    if statut == "mort":
-        afficher_message(ecran, f"{perdant.name} a été tué.")
-    elif statut == "blessé":
-        afficher_message(ecran, f"{perdant.name} a été blessé. Points de vie restants : {perdant.vie}")
+    # Applique les blessures
+    wounds, status = attempt_wound(attacker, defender)
+    if status == "mort":
+        display_message(screen, f"{defender.name} est mort.")
+    elif status == "blessé":
+        display_message(screen, f"{defender.name} est blessé. Points de vie restants : {defender.vie}")
     else:
-        afficher_message(ecran, f"{perdant.name} n'a pas été blessé.")
-    attendre_touche()
+        display_message(screen, f"{defender.name} n'a pas été blessé.")
+    wait_for_space()
 
     # Fin du combat
-    afficher_message(ecran, "Combat terminé. Appuyez sur Échap pour quitter.")
-    attendre_touche(pygame.K_ESCAPE)
-
+    display_message(screen, "Combat terminé.")
+    wait_for_space()
 
 if __name__ == "__main__":
-    test_combat()
+    # Test du combat
+    from duel import Character
+    char1 = Character(name="Guerrier", attaque=4, combat=6, force=4, defense=5, vie=10)
+    char2 = Character(name="Archer", attaque=3, combat=5, force=3, defense=4, vie=8)
+
+    test_combat(screen, char1, char2)
+    pygame.quit()
