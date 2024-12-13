@@ -173,7 +173,8 @@ class Display:
                 "Guerrier: Puissant en attaque rapprochée.",
                 "Archer: Attaque à distance avec précision.",
                 "Magicien: Utilise des sorts puissants.",
-                "Assassin: Agile et rapide en déplacement.",
+                "Assassin: Peut achever des ennemis résistants en une seule fois."
+                "Infirmier: Peut soigner ses compagnons blessés au combat.",
             ]
 
             for i, line in enumerate(powers_text_lines):
