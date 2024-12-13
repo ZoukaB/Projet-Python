@@ -174,7 +174,7 @@ class Display:
                 "Archer: Attaque à distance avec précision.",
                 "Magicien: Utilise des sorts puissants.",
                 "Assassin: Peut achever des ennemis résistants en une seule fois."
-                "Infirmier: Peut soigner ses compagnons blessés au combat.",
+                "Infirmier: Peut soigner ses compagnons blessés au combat.add ",
             ]
 
             for i, line in enumerate(powers_text_lines):
