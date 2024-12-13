@@ -44,6 +44,7 @@ class Unit:
         self.max_vie = max_vie
         self.team = team  # 'player1' or 'player2'
         self.is_selected = False
+        self.capacite_active = False
 
     def move(self, dx, dy, all_units):
         target_x = self.x + dx
@@ -70,52 +71,9 @@ class Unit:
         pygame.draw.circle(screen, color, (self.x * CELL_SIZE + CELL_SIZE // 2, self.y * CELL_SIZE + CELL_SIZE // 2), CELL_SIZE // 3)
         
 class Guerrier:
-    """
-    Classe pour représenter une unité.
 
-    ...
-    Attributs
-    ---------
-    x : int
-        La position x de l'unité sur la grille.
-    y : int
-        La position y de l'unité sur la grille.
-    vie : int
-        La santé de l'unité.
-    attaque : int
-        La puissance d'attaque de l'unité.
-    team : str
-        L'équipe de l'unité ('player' ou 'enemy').
-    is_selected : bool
-        Si l'unité est sélectionnée ou non.
+    def __init__(self, x, y,mouvement,combat,tir,force,defense,attaque,vie,max_vie,energie,team):
 
-    Méthodes
-    --------
-    move(dx, dy)
-        Déplace l'unité de dx, dy.
-    attack(target)
-        Attaque une unité cible.
-    draw(screen)
-        Dessine l'unité sur la grille.
-    """
-
-    def __init__(self, x, y,mouvement,combat,tir,force,defense,attaque,vie,max_vie,team):
-        """
-        Construit une unité avec une position, une santé, une puissance d'attaque et une équipe.
-
-        Paramètres
-        ----------
-        x : int
-            La position x de l'unité sur la grille.
-        y : int
-            La position y de l'unité sur la grille.
-        vie : int
-            La santé de l'unité.
-        attaque : int
-            La puissance d'attaque de l'unité.
-        team : str
-            L'équipe de l'unité ('player' ou 'enemy').
-        """
         self.x = x
         self.y = y
         self.mouvement = mouvement
@@ -126,8 +84,40 @@ class Guerrier:
         self.attaque = attaque
         self.vie = vie
         self.max_vie = max_vie
+        self.energie = energie
         self.team = team  # 'player' ou 'enemy'
         self.is_selected = False
+        self.capacités = ['Boisson du guerrier, Cri de guerre']
+        self.boisson_du_guerrier = 3
+        self.capacite_active = False
+        self.has_moved = False
+        
+    def attack(self, target): #10% de chance de doubler ses dégats
+        """Attaque une unité cible."""
+        pourcentage = random.randint(1,11)
+        if abs(self.x - target.x) <= 1 and abs(self.y - target.y) <= 1:
+            if pourcentage <= 2:
+                target.vie -= 2*self.attaque
+            else:
+                target.vie -= self.attaque
+        else:
+            print("Impossible d'attaquer")
+        
+    def boisson_du_guerrier(self,):
+        if self.boisson_du_guerrier != 0:
+            self.vie += 3 #Adapter chiffre
+            self.boisson_du_guerrier -= 1
+            print("Yessir")
+        else: 
+            print("Vous n'avez plus de boisson du guerrier")
+    
+    def temeraire(self): #Assure des dégats doublé mais utilise de l'énergie
+        attaque_init = self.attaque
+        self.energie -= 5
+        #Active capacité en mettant self.capacite_active = True 
+        while self.capacite_active:
+            self.attaque = 2*self.attaque
+        self.attaque = attaque_init      
 
     def move(self, dx, dy, all_units):
         """Move the unit by dx, dy if within grid bounds and target cell is unoccupied."""
@@ -148,11 +138,6 @@ class Guerrier:
         self.y = target_y
         return True  # Successful move
 
-    def attack(self, target):
-        """Attaque une unité cible."""
-        if abs(self.x - target.x) <= 1 and abs(self.y - target.y) <= 1:
-            target.vie -= self.attaque
-
     def draw(self, screen):
         """Affiche l'unité sur l'écran."""
         color = BLUE if self.team == 'player1' else RED
@@ -161,6 +146,7 @@ class Guerrier:
                              self.y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
         pygame.draw.circle(screen, color, (self.x * CELL_SIZE + CELL_SIZE //
                            2, self.y * CELL_SIZE + CELL_SIZE // 2), CELL_SIZE // 3)
+    
         
 class Archer:
     """

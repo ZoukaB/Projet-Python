@@ -4,11 +4,11 @@ import random
 from unit_fullscreen import *
 
 CHARACTER_OPTIONS = [
-    {"name": "Guerrier", "stats": (0, 10, 4, 4, 4, 4, 5, 4, 10, 10)},
+    {"name": "Guerrier", "stats": (0, 10, 4, 4, 4, 4, 5, 4, 10,10, 10)},
     {"name": "Archer", "stats": (0, 0, 5, 3, 5, 3, 4, 3, 4, 4)},
     {"name": "Magicien", "stats": (0, 0, 3, 6, 2, 5, 3, 2, 2, 2)},
     {"name": "Assassin", "stats": (0, 0, 6, 2, 4, 4, 4, 4, 10, 10)},
-    {"name": "Guerrier2", "stats": (0, 10, 4, 4, 4, 4, 5, 4, 10, 10)},
+    {"name": "Guerrier2", "stats": (0, 10, 4, 4, 4, 4, 5, 4, 10,10, 10)},
     {"name": "Archer2", "stats": (0, 0, 5, 3, 5, 3, 4, 3, 4, 4)},
     {"name": "Magicien2", "stats": (0, 0, 3, 6, 2, 5, 3, 2, 2, 2)},
     {"name": "Assassin2", "stats": (0, 0, 6, 2, 4, 4, 4, 4, 10, 10)}
@@ -228,7 +228,8 @@ class Display:
 
         # Initialize starting positions for each player's units
         player1_positions = [(i, 0) for i in range(2)]
-        player2_positions = [(GRID_COLUMNS - i, GRID_ROWS - 1) for i in range(1, 3)]
+        #player2_positions = [(GRID_COLUMNS - i, GRID_ROWS - 1) for i in range(1, 3)]
+        player2_positions = [(4 - i, 4 - 1) for i in range(1, 3)]
 
         # Main loop for the home screen
         running = True
@@ -437,16 +438,49 @@ class Display:
             for i, line in enumerate(third_column_stats):
                 text = font.render(line, True, (255, 255, 255))  # White text
                 self.screen.blit(text, (third_column_x + 10, menu_y + 20 + i * 30))  # Position with spacing
+                
+            # === Bottom Section: Special Abilities ===
+            bottom_lines = []
+            # First line: title
+            bottom_lines.append("Capacités spéciales")
 
-            # === Bottom Section: Instructions or Additional Text ===
-            bottom_text = "Informations sur les capacités spéciales"
-            bottom_font = pygame.font.Font(None, 18)
-            text_surface = bottom_font.render(bottom_text, True, (255, 255, 255))  # White text
+            # Determine second and third lines based on unit
+            if unit_name == 'Guerrier':
+                bottom_lines.append(f"  Boisson du Guerrier: {selected_unit.boisson_du_guerrier} restantes")
+                bottom_lines.append("  Effet: +6 PV")
+            elif unit_name == 'Archer':
+                bottom_lines.append("  Tir précis: Peut toucher des cibles éloignées")
+                bottom_lines.append("  Effet: Bonus de dégât à distance")
+            elif unit_name == 'Magicien':
+                bottom_lines.append("  Sorts magiques: Lance des sorts variés")
+                bottom_lines.append("  Effet: Dommages magiques ou buffs")
+            elif unit_name == 'Assassin':
+                bottom_lines.append("  Attaque furtive: Se déplace silencieusement")
+                bottom_lines.append("  Effet: Bonus de dégât si non détecté")
+            else:
+                bottom_lines.append("  Aucune capacité spéciale connue")
+                bottom_lines.append("  Effet: N/A")
 
-            # Center the text in the bottom section
-            text_x = menu_x + menu_width // 2 - text_surface.get_width() // 2
-            text_y = menu_y + menu_height - 45  # Leave some padding from the bottom
-            self.screen.blit(text_surface, (text_x, text_y))
+            # Bigger font and spacing
+            bottom_font = pygame.font.Font(None, 28)
+            line_spacing = 10
+            line_height = bottom_font.get_height()
+            total_text_height = len(bottom_lines) * line_height + (len(bottom_lines) - 1) * line_spacing
+
+            # Align the first line with the second column
+            # We'll use second_column_x + 10 as the alignment for the first line
+            # The second and third lines are already indented with spaces "  "
+            # which will visually show the indentation.
+            
+            start_y = menu_y + menu_height - 35 - total_text_height
+
+            for i, line in enumerate(bottom_lines):
+                text_surface = bottom_font.render(line, True, (255, 255, 255))
+                # First line aligned with second column
+                # Following lines also start at the same x, but have leading spaces for indentation
+                text_x = second_column_x + 10
+                text_y = start_y + i * (line_height + line_spacing)
+                self.screen.blit(text_surface, (text_x, text_y))
             
     def flip_display(self, selected_unit=None, hovered_cell=None):
         #self.screen.fill(BLACK)
@@ -484,6 +518,23 @@ class Display:
             if hovered_cell in movement_range:
                 rect = pygame.Rect(hovered_cell[0] * CELL_SIZE, hovered_cell[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE)
                 pygame.draw.rect(self.screen, (200, 160, 255), rect)
+
+        # Draw the menu in the lower-left corner
+        self.draw_menu(selected_unit)
+
+        pygame.display.flip()
+        
+    def flip_display_basic(self,selected_unit):
+        #self.screen.fill(BLACK)
+        self.screen.blit(self.BoardBackground, (0,0)) # Board Background
+
+        #for x in range(0, WIDTH, CELL_SIZE):
+        #    for y in range(0, HEIGHT, CELL_SIZE):
+        #        rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
+        #        pygame.draw.rect(self.screen, WHITE, rect, 1)
+
+        for unit in self.game.player1_units + self.game.player2_units:
+            unit.draw(self.screen)
 
         # Draw the menu in the lower-left corner
         self.draw_menu(selected_unit)
