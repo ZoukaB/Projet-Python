@@ -114,8 +114,11 @@ class Magicien(Unit):
 
 class Assassin(Unit):
     def __init__(self, x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team):
-        super().__init__(x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team, range_=1)  # Assassin range 1
+        super().__init__(x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team, range_=3)  # Assassin range 1
 
+class Infirmier(Unit):
+    def __init__(self, x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team):
+        super().__init__(x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team, range_=2)  # Infirmier range 1
 
 
   
