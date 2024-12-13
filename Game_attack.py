@@ -225,16 +225,7 @@ class Game:
 
             self.display.flip_display(selected_unit, hovered_cell)
      
-    def handle_player1_attack(self, selected_unit):
-        hovered_cell = (selected_unit.x, selected_unit.y)
-        self.message = None
-        self.message_timer = 0
-
-        # Function to display a temporary message on the screen
-        def display_message(text, duration=1000):
-            self.message = text
-            self.message_timer = pygame.time.get_ticks() + duration
-
+    def handle_player1_attack(self, selected_unit):        
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -245,41 +236,37 @@ class Game:
                     if event.key == pygame.K_ESCAPE:
                         self.pause_menu()
 
+                    if event.key == pygame.K_TAB:
+                        # Toggle the special ability screen display
+                        self.display.capacity_choice(selected_unit)
+                        self.display.draw_menu(selected_unit)
+                    
                     if event.key == pygame.K_RETURN:
                         # Attack logic when Enter is pressed
                         attacked = False
                         for enemy in self.player2_units:
                             if abs(selected_unit.x - enemy.x) <= 1 and abs(selected_unit.y - enemy.y) <= 1:
                                 selected_unit.attack(enemy)
-                                display_message(f"Enemy HP: {enemy.vie}", duration=1000)
                                 attacked = True
 
                                 # Remove the enemy if their health is 0 or less
                                 if enemy.vie <= 0:
                                     self.player2_units.remove(enemy)
-                                    display_message("Enemy defeated!", duration=1000)
                                 break  # Only one attack per turn
 
                         if not attacked:
-                            display_message("No enemy to attack!", duration=1000)
+                            print("No enemy to attack!")
 
                         # Mark the unit's turn as complete
-                        selected_unit.is_selected = False
+                        #selected_unit.is_selected = False
+                        if selected_unit.__class__.__name__ == 'Guerrier':
+                            selected_unit.desactive_temeraire()
                         return  # Exit the function after the attack
-
-            # Display the temporary message if active
-            if self.message and pygame.time.get_ticks() < self.message_timer:
-                font = pygame.font.Font(None, 36)
-                text_surface = font.render(self.message, True, (255, 0, 0))
-                self.screen.blit(text_surface, (20, 20))
-            else:
-                self.message = None
-
+                    
             # Update the display
+            
             self.display.flip_display_basic(selected_unit)
             pygame.display.flip()
-
-
          
 def main():
     pygame.init()

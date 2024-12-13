@@ -432,7 +432,7 @@ class Display:
             third_column_stats = [
                 f"Force: {selected_unit.force}",
                 f"Combat: {selected_unit.combat}",
-                f"Vie max: {selected_unit.max_vie}",
+                f"Energie: {selected_unit.energie}",
             ]
 
             for i, line in enumerate(third_column_stats):
@@ -481,6 +481,74 @@ class Display:
                 text_x = second_column_x + 10
                 text_y = start_y + i * (line_height + line_spacing)
                 self.screen.blit(text_surface, (text_x, text_y))
+  
+    def capacity_choice(self,selected_unit):
+        # Define the text and font
+        font = pygame.font.Font(None, 38)
+        font1 = pygame.font.Font(None, 32)
+        prompt_surface = font.render("Quelle capacité spéciale voulez-vous activer ?", True, (255, 255, 255))
+        option1_surface = font1.render(f"1 - {selected_unit.capacités[0]}", True, (255, 255, 0))
+        option2_surface = font1.render(f"2 - {selected_unit.capacités[1]}", True, (255, 255, 0))
+
+        # Get screen dimensions
+        screen_width, screen_height = self.screen.get_size()
+
+        # Calculate the overlay size and position to center it
+        overlay_width, overlay_height = 600, 200
+        overlay_x = (screen_width - overlay_width) // 2
+        overlay_y = (screen_height - overlay_height) // 2
+
+        # Create a semi-transparent background rectangle
+        overlay = pygame.Surface((overlay_width, overlay_height))
+        overlay.set_alpha(200)
+        overlay.fill((0, 0, 0))
+
+        # Calculate text positions to center them within the overlay
+        prompt_x = overlay_x + (overlay_width - prompt_surface.get_width()) // 2
+        prompt_y = overlay_y + 20  # Slight padding from the top
+
+        option1_x = overlay_x + (overlay_width - option1_surface.get_width()) // 2
+        option1_y = overlay_y + 80
+
+        option2_x = overlay_x + (overlay_width - option2_surface.get_width()) // 2
+        option2_y = overlay_y + 130
+
+        capacity_choice = True
+        while capacity_choice:
+            # Draw the current game screen
+            #self.display.flip_display_basic(selected_unit)
+
+            # Draw the overlay
+            self.screen.blit(overlay, (overlay_x, overlay_y))
+
+            # Blit the prompt and options on the screen
+            self.screen.blit(prompt_surface, (prompt_x, prompt_y))
+            self.screen.blit(option1_surface, (option1_x, option1_y))
+            self.screen.blit(option2_surface, (option2_x, option2_y))
+
+            # Handle events
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key in [pygame.K_1, pygame.K_2]:
+                        # Handle special ability selection
+                        if event.key == pygame.K_1:
+                            print(selected_unit.__class__.__name__)
+                            if selected_unit.__class__.__name__ == 'Guerrier':
+                                selected_unit.boisson_guerrier()
+                                print("Boisson du guerrier activated!")
+                                capacity_choice = False
+                        elif event.key == pygame.K_2:
+                            if selected_unit.__class__.__name__ == 'Guerrier':
+                                selected_unit.temeraire()
+                                print("Téméraire activated!")
+                                capacity_choice = False
+
+            # Update the display
+            pygame.display.flip() 
             
     def flip_display(self, selected_unit=None, hovered_cell=None):
         #self.screen.fill(BLACK)

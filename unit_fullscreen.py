@@ -87,10 +87,11 @@ class Guerrier:
         self.energie = energie
         self.team = team  # 'player' ou 'enemy'
         self.is_selected = False
-        self.capacités = ['Boisson du guerrier, Cri de guerre']
+        self.capacités = ['Boisson du guerrier','Téméraire']
         self.boisson_du_guerrier = 3
         self.capacite_active = False
         self.has_moved = False
+        attaque_initial = attaque
         
     def attack(self, target): #10% de chance de doubler ses dégats
         """Attaque une unité cible."""
@@ -103,21 +104,22 @@ class Guerrier:
         else:
             print("Impossible d'attaquer")
         
-    def boisson_du_guerrier(self,):
+    def boisson_guerrier(self):
         if self.boisson_du_guerrier != 0:
-            self.vie += 3 #Adapter chiffre
             self.boisson_du_guerrier -= 1
-            print("Yessir")
+            self.vie += 3 #Adapter chiffre
         else: 
             print("Vous n'avez plus de boisson du guerrier")
     
     def temeraire(self): #Assure des dégats doublé mais utilise de l'énergie
-        attaque_init = self.attaque
-        self.energie -= 5
-        #Active capacité en mettant self.capacite_active = True 
-        while self.capacite_active:
+        if self.energie >= 5:
+            self.energie -= 5
             self.attaque = 2*self.attaque
-        self.attaque = attaque_init      
+        else:
+            print("Plus assez d'énergie")    
+
+    def desactive_temeraire(self):
+        self.attaque = self.attaque // 2
 
     def move(self, dx, dy, all_units):
         """Move the unit by dx, dy if within grid bounds and target cell is unoccupied."""
