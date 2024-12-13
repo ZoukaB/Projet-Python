@@ -96,26 +96,9 @@ class Game:
         self.player1_units = []
         self.player2_units = [] 
 
-    def handle_player1_turn(self):
-        selected_unit = None
-        hovered_cell = None
-        moved_units = []
-        proposed_x = None
-        proposed_y = None
-
-        # Function to select the next unmoved unit automatically
-        def select_next_unit():
-            for unit in self.player1_units:
-                if unit not in moved_units:
-                    unit.is_selected = True
-                    return unit
-            return None  # No unmoved units remain
-
-        # Initially select the first unmoved unit automatically
-        selected_unit = select_next_unit()
-        if selected_unit:
-            proposed_x, proposed_y = selected_unit.x, selected_unit.y
-            hovered_cell = (proposed_x, proposed_y)
+    def handle_player1_turn(self, selected_unit):
+        hovered_cell = (selected_unit.x, selected_unit.y)
+        proposed_x, proposed_y = selected_unit.x, selected_unit.y
 
         while True:
             for event in pygame.event.get():
@@ -127,56 +110,39 @@ class Game:
                     if event.key == pygame.K_ESCAPE:
                         self.pause_menu()
 
-                    # Only handle movement keys if we have a selected unit
-                    if selected_unit:
-                        dx, dy = 0, 0
-                        if event.key == pygame.K_UP:
-                            dy = -1
-                        elif event.key == pygame.K_DOWN:
-                            dy = 1
-                        elif event.key == pygame.K_LEFT:
-                            dx = -1
-                        elif event.key == pygame.K_RIGHT:
-                            dx = 1
-                        elif event.key == pygame.K_SPACE:
-                            # Confirm the move if it's within range and valid
-                            final_dx = proposed_x - selected_unit.x
-                            final_dy = proposed_y - selected_unit.y
-                            if abs(final_dx) + abs(final_dy) <= selected_unit.mouvement:
-                                selected_unit.move(final_dx, final_dy, self.player1_units + self.player2_units)
-                                selected_unit.is_selected = False
-                                moved_units.append(selected_unit)
-                                selected_unit = select_next_unit()
-                                if selected_unit:
-                                    proposed_x, proposed_y = selected_unit.x, selected_unit.y
-                                    hovered_cell = (proposed_x, proposed_y)
-                                else:
-                                    # No more units to move or attack
-                                    break
+                    # Handle movement keys
+                    dx, dy = 0, 0
+                    if event.key == pygame.K_UP:
+                        dy = -1
+                    elif event.key == pygame.K_DOWN:
+                        dy = 1
+                    elif event.key == pygame.K_LEFT:
+                        dx = -1
+                    elif event.key == pygame.K_RIGHT:
+                        dx = 1
+                    elif event.key == pygame.K_SPACE:
+                        # Confirm the move if it's within range and valid
+                        final_dx = proposed_x - selected_unit.x
+                        final_dy = proposed_y - selected_unit.y
+                        if abs(final_dx) + abs(final_dy) <= selected_unit.mouvement:
+                            if selected_unit.move(final_dx, final_dy, self.player1_units + self.player2_units):
+                                #selected_unit.is_selected = False
+                                return  # Exit the function after moving the unit
 
-                        # If the player pressed an arrow key, update the proposed cell position
-                        if dx != 0 or dy != 0 and selected_unit is not None:
-                            new_x = proposed_x + dx
-                            new_y = proposed_y + dy
-                            # Check if within movement range
-                            if (abs(new_x - selected_unit.x) + abs(new_y - selected_unit.y)) <= selected_unit.mouvement:
-                                # Also check if within grid boundaries
-                                if 0 <= new_x < GRID_COLUMNS and 0 <= new_y < GRID_ROWS:
-                                    proposed_x, proposed_y = new_x, new_y
-                                    hovered_cell = (proposed_x, proposed_y)
+                    # Update proposed cell position with arrow keys
+                    if dx != 0 or dy != 0:
+                        new_x = proposed_x + dx
+                        new_y = proposed_y + dy
+                        # Check if within movement range and grid boundaries
+                        if (abs(new_x - selected_unit.x) + abs(new_y - selected_unit.y)) <= selected_unit.mouvement:
+                            if 0 <= new_x < GRID_COLUMNS and 0 <= new_y < GRID_ROWS:
+                                proposed_x, proposed_y = new_x, new_y
+                                hovered_cell = (proposed_x, proposed_y)
 
-                if event.type == pygame.MOUSEMOTION:
-                    # If no unit selected, just update hovered cell for UI feedback
-                    if not selected_unit:
-                        mouse_x, mouse_y = pygame.mouse.get_pos()
-                        hovered_cell = (mouse_x // CELL_SIZE, mouse_y // CELL_SIZE)
-
-            # If all units have moved, end the turn
-            if len(moved_units) == len(self.player1_units):
-                break
-
+            # Update the display
             self.display.flip_display(selected_unit, hovered_cell)
-   
+            pygame.display.flip()
+
     def handle_player2_turn(self):
         selected_unit = None
         hovered_cell = None
@@ -258,6 +224,62 @@ class Game:
                 break
 
             self.display.flip_display(selected_unit, hovered_cell)
+     
+    def handle_player1_attack(self, selected_unit):
+        hovered_cell = (selected_unit.x, selected_unit.y)
+        self.message = None
+        self.message_timer = 0
+
+        # Function to display a temporary message on the screen
+        def display_message(text, duration=1000):
+            self.message = text
+            self.message_timer = pygame.time.get_ticks() + duration
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.pause_menu()
+
+                    if event.key == pygame.K_RETURN:
+                        # Attack logic when Enter is pressed
+                        attacked = False
+                        for enemy in self.player2_units:
+                            if abs(selected_unit.x - enemy.x) <= 1 and abs(selected_unit.y - enemy.y) <= 1:
+                                selected_unit.attack(enemy)
+                                display_message(f"Enemy HP: {enemy.vie}", duration=1000)
+                                attacked = True
+
+                                # Remove the enemy if their health is 0 or less
+                                if enemy.vie <= 0:
+                                    self.player2_units.remove(enemy)
+                                    display_message("Enemy defeated!", duration=1000)
+                                break  # Only one attack per turn
+
+                        if not attacked:
+                            display_message("No enemy to attack!", duration=1000)
+
+                        # Mark the unit's turn as complete
+                        selected_unit.is_selected = False
+                        return  # Exit the function after the attack
+
+            # Display the temporary message if active
+            if self.message and pygame.time.get_ticks() < self.message_timer:
+                font = pygame.font.Font(None, 36)
+                text_surface = font.render(self.message, True, (255, 0, 0))
+                self.screen.blit(text_surface, (20, 20))
+            else:
+                self.message = None
+
+            # Update the display
+            self.display.flip_display_basic(selected_unit)
+            pygame.display.flip()
+
+
          
 def main():
     pygame.init()
@@ -265,14 +287,21 @@ def main():
     pygame.display.set_caption("Mon jeu de stratégie")
     game = Game(screen)
     display = Display(screen,game)
-    
     while True:
-        #display.initialize_main_menu()  # Start at the main menu and character selection
+        # Display the character selection screen
         display.character_choice_screen()
+
         # After character selection, start the game loop
         running = True
         while running:
-            game.handle_player1_turn()
+            # Handle player 1's turn by moving all units one by one
+            for unit in game.player1_units:
+                unit.is_selected = True
+                game.handle_player1_turn(unit)
+                game.handle_player1_attack(unit)
+                unit.is_selected = False  # Deselect the unit after moving
+
+            # Handle player 2's turn
             game.handle_player2_turn()
 
             # Check if the game has been reset (e.g., when returning to the main menu)
@@ -280,6 +309,7 @@ def main():
                 running = False
                 pygame.display.flip()
                 # Exit the game loop to restart the main loop
+
 
 if __name__ == "__main__":
     main()
