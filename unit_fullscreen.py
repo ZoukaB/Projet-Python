@@ -89,14 +89,13 @@ class Guerrier:
         self.is_selected = False
         self.capacités = ['Boisson du guerrier','Téméraire']
         self.boisson_du_guerrier = 3
-        self.capacite_active = False
-        self.has_moved = False
-        attaque_initial = attaque
+        self.attack_range = 1
+        self.temeraire_active = False
         
     def attack(self, target): #10% de chance de doubler ses dégats
         """Attaque une unité cible."""
         pourcentage = random.randint(1,11)
-        if abs(self.x - target.x) <= 1 and abs(self.y - target.y) <= 1:
+        if abs(self.x - target.x) <= self.attack_range and abs(self.y - target.y) <= self.attack_range:
             if pourcentage <= 2:
                 target.vie -= 2*self.attaque
             else:
@@ -113,6 +112,7 @@ class Guerrier:
     
     def temeraire(self): #Assure des dégats doublé mais utilise de l'énergie
         if self.energie >= 5:
+            self.temeraire_active = True
             self.energie -= 5
             self.attaque = 2*self.attaque
         else:
@@ -120,6 +120,7 @@ class Guerrier:
 
     def desactive_temeraire(self):
         self.attaque = self.attaque // 2
+        self.temeraire = False
 
     def move(self, dx, dy, all_units):
         """Move the unit by dx, dy if within grid bounds and target cell is unoccupied."""
@@ -151,52 +152,7 @@ class Guerrier:
     
         
 class Archer:
-    """
-    Classe pour représenter une unité.
-
-    ...
-    Attributs
-    ---------
-    x : int
-        La position x de l'unité sur la grille.
-    y : int
-        La position y de l'unité sur la grille.
-    vie : int
-        La santé de l'unité.
-    attaque : int
-        La puissance d'attaque de l'unité.
-    team : str
-        L'équipe de l'unité ('player' ou 'enemy').
-    is_selected : bool
-        Si l'unité est sélectionnée ou non.
-
-    Méthodes
-    --------
-    move(dx, dy)
-        Déplace l'unité de dx, dy.
-    attack(target)
-        Attaque une unité cible.
-    draw(screen)
-        Dessine l'unité sur la grille.
-    """
-
-    def __init__(self, x, y,mouvement,combat,tir,force,defense,attaque,vie,max_vie,team):
-        """
-        Construit une unité avec une position, une santé, une puissance d'attaque et une équipe.
-
-        Paramètres
-        ----------
-        x : int
-            La position x de l'unité sur la grille.
-        y : int
-            La position y de l'unité sur la grille.
-        vie : int
-            La santé de l'unité.
-        attaque : int
-            La puissance d'attaque de l'unité.
-        team : str
-            L'équipe de l'unité ('player' ou 'enemy').
-        """
+    def __init__(self, x, y,mouvement,combat,tir,force,defense,attaque,vie,max_vie,energie,team):
         self.x = x
         self.y = y
         self.mouvement = mouvement
@@ -207,8 +163,13 @@ class Archer:
         self.attaque = attaque
         self.vie = vie
         self.max_vie = max_vie
-        self.team = team  # 'player' ou 'enemy'
+        self.team = team
+        self.capacités = ['Fleche de soin','Headshot']
+        self.attack_range = 5
         self.is_selected = False
+        self.fleche_soigneuse = 3
+        self.energie = energie
+        self.headshot_actif = False
 
     def move(self, dx, dy, all_units):
         """Move the unit by dx, dy if within grid bounds and target cell is unoccupied."""
@@ -231,7 +192,7 @@ class Archer:
 
     def attack(self, target):
         """Attaque une unité cible."""
-        if abs(self.x - target.x) <= 1 and abs(self.y - target.y) <= 1:
+        if abs(self.x - target.x) <= self.attack_range or abs(self.y - target.y) <= self.attack_range:
             target.vie -= self.attaque
 
     def draw(self, screen):
@@ -242,6 +203,31 @@ class Archer:
                              self.y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
         pygame.draw.circle(screen, color, (self.x * CELL_SIZE + CELL_SIZE //
                            2, self.y * CELL_SIZE + CELL_SIZE // 2), CELL_SIZE // 3)
+
+    def fleche_de_guerison(self,target):
+        #Tire un fleche qui soigne ses aliés 
+        if self.fleche_soigneuse != 0:
+            self.fleche_soigneuse -= 1
+            if target.vie <= target.max_vie-5:
+                target.vie += 5
+            else:
+                target.vie = target.max_vie
+        else:
+            print("Vous n'avez plus de flèches de guérison")
+    
+    def headshot(self):
+        if self.energie >= 10:
+            self.energie -= 6
+            self.attaque = 3*self.attaque
+            self.headshot_actif = True
+        else:
+            print("Vous n'avez pas assez d'énergie pour cette attaque")
+    
+    def annul_headshot(self):
+        self.attaque = self.attaque//3
+        self.headshot_actif = False
+
+        
 
 class Magicien:
     """
@@ -273,7 +259,7 @@ class Magicien:
         Dessine l'unité sur la grille.
     """
 
-    def __init__(self, x, y,mouvement,combat,tir,force,defense,attaque,vie,max_vie,team):
+    def __init__(self, x, y,mouvement,combat,tir,force,defense,attaque,vie,max_vie,energie,team):
         """
         Construit une unité avec une position, une santé, une puissance d'attaque et une équipe.
 
@@ -302,6 +288,7 @@ class Magicien:
         self.max_vie = max_vie
         self.team = team  # 'player' ou 'enemy'
         self.is_selected = False
+        self.energie = energie
 
     def move(self, dx, dy, all_units):
         """Move the unit by dx, dy if within grid bounds and target cell is unoccupied."""
@@ -366,7 +353,7 @@ class Assassin:
         Dessine l'unité sur la grille.
     """
 
-    def __init__(self, x, y,mouvement,combat,tir,force,defense,attaque,vie,max_vie,team):
+    def __init__(self, x, y,mouvement,combat,tir,force,defense,attaque,vie,max_vie,energie,team):
         """
         Construit une unité avec une position, une santé, une puissance d'attaque et une équipe.
 
@@ -395,6 +382,7 @@ class Assassin:
         self.max_vie = max_vie
         self.team = team  # 'player' ou 'enemy'
         self.is_selected = False
+        self.energie = energie
 
     def move(self, dx, dy, all_units):
         """Move the unit by dx, dy if within grid bounds and target cell is unoccupied."""
