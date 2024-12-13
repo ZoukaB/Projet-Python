@@ -92,14 +92,14 @@ class Game:
 
         # Load and display the unit's image based on its class name
         character_images = {
-            "Guerrier": pygame.image.load("Warrior1.png").convert_alpha(),
-            "Archer": pygame.image.load("Archer1.png").convert_alpha(),
-            "Magicien": pygame.image.load("Wizard1.png").convert_alpha(),
-            "Assassin": pygame.image.load("Assasin1.png").convert_alpha(),
-            "Guerrier2": pygame.image.load("Warrior2.png").convert_alpha(),
-            "Archer2": pygame.image.load("Archer2.png").convert_alpha(),
-            "Magicien2": pygame.image.load("Wizard2.png").convert_alpha(),
-            "Assassin2": pygame.image.load("Assasin2.png").convert_alpha(),
+            "Guerrier": pygame.image.load("Images_persos/Warrior1.png").convert_alpha(),
+            "Archer": pygame.image.load("Images_persos/Archer1.png").convert_alpha(),
+            "Magicien": pygame.image.load("Images_persos/Wizard1.png").convert_alpha(),
+            "Assassin": pygame.image.load("Images_persos/Assasin1.png").convert_alpha(),
+            "Guerrier2": pygame.image.load("Images_persos/Warrior2.png").convert_alpha(),
+            "Archer2": pygame.image.load("Images_persos/Archer2.png").convert_alpha(),
+            "Magicien2": pygame.image.load("Images_persos/Wizard2.png").convert_alpha(),
+            "Assassin2": pygame.image.load("Images_persos/Assasin2.png").convert_alpha(),
         }
 
         # Resize character images to fit the smaller squares
