@@ -4,14 +4,14 @@ import random
 from unit_fullscreen import *
 
 CHARACTER_OPTIONS = [
-    {"name": "Guerrier", "stats": (0, 10, 4, 4, 4, 4, 5, 4, 10,10, 10)},
-    {"name": "Archer", "stats": (0, 0, 5, 3, 5, 3, 4, 3, 4, 4)},
-    {"name": "Magicien", "stats": (0, 0, 3, 6, 2, 5, 3, 2, 2, 2)},
-    {"name": "Assassin", "stats": (0, 0, 6, 2, 4, 4, 4, 4, 10, 10)},
+    {"name": "Guerrier", "stats": (0, 0, 4, 4, 4, 4, 5, 4, 10,10, 10)},
+    {"name": "Archer", "stats": (0, 0, 5, 3, 5, 3, 4, 3, 4, 4,10)},
+    {"name": "Magicien", "stats": (0, 0, 3, 6, 2, 5, 3, 2, 2, 2,10)},
+    {"name": "Assassin", "stats": (0, 0, 6, 2, 4, 4, 4, 4, 10, 10,10)},
     {"name": "Guerrier2", "stats": (0, 10, 4, 4, 4, 4, 5, 4, 10,10, 10)},
-    {"name": "Archer2", "stats": (0, 0, 5, 3, 5, 3, 4, 3, 4, 4)},
-    {"name": "Magicien2", "stats": (0, 0, 3, 6, 2, 5, 3, 2, 2, 2)},
-    {"name": "Assassin2", "stats": (0, 0, 6, 2, 4, 4, 4, 4, 10, 10)}
+    {"name": "Archer2", "stats": (0, 0, 5, 3, 5, 3, 4, 3, 4, 4,10)},
+    {"name": "Magicien2", "stats": (0, 0, 3, 6, 2, 5, 3, 2, 2, 2,10)},
+    {"name": "Assassin2", "stats": (0, 0, 6, 2, 4, 4, 4, 4, 10, 10,10)}
 ]
 
 class Display:
@@ -432,7 +432,7 @@ class Display:
             third_column_stats = [
                 f"Force: {selected_unit.force}",
                 f"Combat: {selected_unit.combat}",
-                f"Vie max: {selected_unit.max_vie}",
+                f"Energie: {selected_unit.energie}",
             ]
 
             for i, line in enumerate(third_column_stats):
@@ -481,6 +481,123 @@ class Display:
                 text_x = second_column_x + 10
                 text_y = start_y + i * (line_height + line_spacing)
                 self.screen.blit(text_surface, (text_x, text_y))
+  
+    def capacity_choice(self,selected_unit):
+        # Define the text and font
+        font = pygame.font.Font(None, 38)
+        font1 = pygame.font.Font(None, 32)
+        prompt_surface = font.render("Quelle capacité spéciale voulez-vous activer ?", True, (255, 255, 255))
+        option1_surface = font1.render(f"1 - {selected_unit.capacités[0]}", True, (255, 255, 0))
+        option2_surface = font1.render(f"2 - {selected_unit.capacités[1]}", True, (255, 255, 0))
+
+        # Get screen dimensions
+        screen_width, screen_height = self.screen.get_size()
+
+        # Calculate the overlay size and position to center it
+        overlay_width, overlay_height = 600, 200
+        overlay_x = (screen_width - overlay_width) // 2
+        overlay_y = (screen_height - overlay_height) // 2
+
+        # Create a semi-transparent background rectangle
+        overlay = pygame.Surface((overlay_width, overlay_height))
+        overlay.set_alpha(200)
+        overlay.fill((0, 0, 0))
+
+        # Calculate text positions to center them within the overlay
+        prompt_x = overlay_x + (overlay_width - prompt_surface.get_width()) // 2
+        prompt_y = overlay_y + 20  # Slight padding from the top
+
+        option1_x = overlay_x + (overlay_width - option1_surface.get_width()) // 2
+        option1_y = overlay_y + 80
+
+        option2_x = overlay_x + (overlay_width - option2_surface.get_width()) // 2
+        option2_y = overlay_y + 130
+
+        capacity_choice = True
+        while capacity_choice:
+            # Draw the current game screen
+            #self.display.flip_display_basic(selected_unit)
+
+            # Draw the overlay
+            self.screen.blit(overlay, (overlay_x, overlay_y))
+
+            # Blit the prompt and options on the screen
+            self.screen.blit(prompt_surface, (prompt_x, prompt_y))
+            self.screen.blit(option1_surface, (option1_x, option1_y))
+            self.screen.blit(option2_surface, (option2_x, option2_y))
+
+            # Handle events
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key in [pygame.K_1, pygame.K_2]:
+                        # Handle special ability selection
+                        if event.key == pygame.K_1:
+                            
+                            if selected_unit.__class__.__name__ == 'Guerrier':
+                                selected_unit.boisson_guerrier()
+                                print("Boisson du guerrier activated!")
+                                capacity_choice = False
+                                
+                            if selected_unit.__class__.__name__ == 'Archer':
+                                self.affiche_message_centre("Veuillez séléctionner un personnage à soigner")
+                                wainting_selection = True
+                                while wainting_selection:
+                                    for event in pygame.event.get():
+                                        if event.type == pygame.QUIT:
+                                            pygame.quit()
+                                            exit()
+                                        if event.type == pygame.MOUSEBUTTONDOWN:
+                                            mouse_x, mouse_y = pygame.mouse.get_pos()
+                                            # Check if the mouse click intersects with any unit's position
+                                            for unit in self.game.player1_units:
+                                                unit_rect = pygame.Rect(unit.x * CELL_SIZE, unit.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                                                if unit_rect.collidepoint(mouse_x, mouse_y):
+                                                    selected_unit.fleche_de_guerison(unit)
+                                                    self.affiche_message_centre(f"Pv allié {unit.vie}")
+                                                    wainting_selection = False
+                                                    capacity_choice = False
+                                            
+                        elif event.key == pygame.K_2:
+                            
+                            if selected_unit.__class__.__name__ == 'Guerrier':
+                                selected_unit.temeraire()
+                                print("Téméraire activated!")
+                                capacity_choice = False
+                            
+                            if selected_unit.__class__.__name__ == 'Archer':
+                                selected_unit.headshot()
+                                capacity_choice = False
+
+            # Update the display
+            pygame.display.flip() 
+            
+    def affiche_message_centre(self, message, taille_police=48, couleur=(255, 255, 255), duree=1000):
+        # Initialiser la police
+        font = pygame.font.Font(None, taille_police)
+
+        # Créer le rendu du texte
+        texte_surface = font.render(message, True, couleur)
+
+        # Obtenir les dimensions de l'écran
+        largeur_ecran, hauteur_ecran = self.screen.get_size()
+
+        # Calculer la position pour centrer le texte
+        texte_x = (largeur_ecran - texte_surface.get_width()) // 2
+        texte_y = (hauteur_ecran - texte_surface.get_height()) // 2
+
+        # Afficher le texte
+        self.screen.blit(texte_surface, (texte_x, texte_y))
+
+        # Mettre à jour l'affichage
+        pygame.display.flip()
+
+        # Attendre pendant la durée spécifiée
+        pygame.time.wait(duree)
+
             
     def flip_display(self, selected_unit=None, hovered_cell=None):
         #self.screen.fill(BLACK)
@@ -518,6 +635,8 @@ class Display:
             if hovered_cell in movement_range:
                 rect = pygame.Rect(hovered_cell[0] * CELL_SIZE, hovered_cell[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE)
                 pygame.draw.rect(self.screen, (200, 160, 255), rect)
+
+
 
         # Draw the menu in the lower-left corner
         self.draw_menu(selected_unit)
