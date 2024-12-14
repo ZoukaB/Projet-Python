@@ -19,10 +19,10 @@ class Guerrier(Unit):
             else:
                 target.vie -= self.attaque
         
-    def boisson_guerrier(self):
+    def boisson_guerrier(self): #Regenère 3 PV
         if self.boisson_du_guerrier != 0:
             self.boisson_du_guerrier -= 1
-            self.vie += 3 #Adapter chiffre
+            self.vie += 3 
             return "Vous venez d'utiliser une boisson du guerrier"
         else: 
             return "Vous n'avez plus de boisson du guerrier"
@@ -84,6 +84,7 @@ class Archer(Unit):
             return "Vous n'avez plus de flèches de guérison"
     
     def headshot(self):
+        #Triple ses dégats 
         if self.energie >= 10:
             self.energie -= 6
             self.attaque = 3*self.attaque
@@ -119,6 +120,7 @@ class Magicien(Unit):
                            2, self.y * CELL_SIZE + CELL_SIZE // 2), CELL_SIZE // 3)
 
     def sort_de_poison(self,target):
+        #Empoisonne un ennemi pendant 3 tours
         if self.energie >= 4:
             self.energie -=4
             target.empoisonné = True
@@ -128,6 +130,7 @@ class Magicien(Unit):
             return "Pas assez d'énergie pour utiliser ce sort"
 
     def boule_de_feu(self, target_x, target_y, enemies):
+        #Envoie une boule de feu qui fait des dégats de zone
         if self.stock_boule_de_feu != 0:
             for enemy in enemies:
                 if abs(enemy.x - target_x) <= 1 and abs(enemy.y - target_y) <= 1:
@@ -162,6 +165,7 @@ class Assassin(Unit):
                            2, self.y * CELL_SIZE + CELL_SIZE // 2), CELL_SIZE // 3)
         
     def coup_fatal(self):
+        #Permet de tuer a coup sur un ennemi, mais l'affaibli bcp et utilise toute son énergie
         if self.fatality != 0 and self.energie == 10:
             self.coup_fatal_actif = True
             self.fatality = 0 
@@ -177,6 +181,7 @@ class Assassin(Unit):
         self.attaque = self.attaque //100
         
     def fuite(self,target_x,target_y):
+        #Permet de se téléporter n'importe ou
         if self.vie <= 4 and self.energie >= 5: 
             self.x = target_x
             self.y = target_y
