@@ -1,6 +1,7 @@
 from math import ceil
 import pygame
 import random
+import math
 
 # Initialize Pygame to fetch display info
 pygame.init()
@@ -63,12 +64,27 @@ class Unit:
         self.x = target_x
         self.y = target_y
         return True  # Successful move
-
+    
+    def is_in_range(self, target):
+        """
+        Verify if the target is between the attack range.
+        Use self.range_ for the attack range.
+        """
+        return max(abs(self.x - target.x), abs(self.y - target.y)) <= self.range_
+    
     def draw(self, screen):
         color = BLUE if self.team == 'player1' else RED
         if self.is_selected:
             pygame.draw.rect(screen, GREEN, (self.x * CELL_SIZE, self.y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
         pygame.draw.circle(screen, color, (self.x * CELL_SIZE + CELL_SIZE // 2, self.y * CELL_SIZE + CELL_SIZE // 2), CELL_SIZE // 3)
+
+        # Draws health life bar
+        health_bar_width = CELL_SIZE
+        health_bar_height = 5
+        health_ratio = self.vie / self.max_vie
+        filled_width = int(health_bar_width * health_ratio)
+        pygame.draw.rect(screen, RED, (self.x * CELL_SIZE, self.y * CELL_SIZE - 10, health_bar_width, health_bar_height))
+        pygame.draw.rect(screen, GREEN, (self.x * CELL_SIZE, self.y * CELL_SIZE - 10, filled_width, health_bar_height))
         
 class Guerrier:
 
@@ -91,6 +107,12 @@ class Guerrier:
         self.boisson_du_guerrier = 3
         self.attack_range = 1
         self.temeraire_active = False
+
+        self.image_player1 = pygame.image.load("PersosBoard/warrior1.png").convert_alpha()
+        self.image_player1 = pygame.transform.scale(self.image_player1, (CELL_SIZE, CELL_SIZE))
+
+        self.image_player2 = pygame.image.load("PersosBoard/warrior2.png").convert_alpha()
+        self.image_player2 = pygame.transform.scale(self.image_player2, (CELL_SIZE, CELL_SIZE))
         
     def attack(self, target): #10% de chance de doubler ses dégats
         """Attaque une unité cible."""
@@ -143,12 +165,14 @@ class Guerrier:
 
     def draw(self, screen):
         """Affiche l'unité sur l'écran."""
-        color = BLUE if self.team == 'player1' else RED
         if self.is_selected:
             pygame.draw.rect(screen, GREEN, (self.x * CELL_SIZE,
-                             self.y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
-        pygame.draw.circle(screen, color, (self.x * CELL_SIZE + CELL_SIZE //
-                           2, self.y * CELL_SIZE + CELL_SIZE // 2), CELL_SIZE // 3)
+                                             self.y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+        # Choose the image based on the player
+        image = self.image_player1 if self.team == 'player1' else self.image_player2
+        # Draw the selected image
+        if image:
+            screen.blit(image, (self.x * CELL_SIZE, self.y * CELL_SIZE))
     
         
 class Archer:
@@ -170,6 +194,12 @@ class Archer:
         self.fleche_soigneuse = 3
         self.energie = energie
         self.headshot_actif = False
+
+        self.image_player1 = pygame.image.load("PersosBoard/archer1.png").convert_alpha()
+        self.image_player1 = pygame.transform.scale(self.image_player1, (CELL_SIZE, CELL_SIZE))
+
+        self.image_player2 = pygame.image.load("PersosBoard/archer2.png").convert_alpha()
+        self.image_player2 = pygame.transform.scale(self.image_player2, (CELL_SIZE, CELL_SIZE))
 
     def move(self, dx, dy, all_units):
         """Move the unit by dx, dy if within grid bounds and target cell is unoccupied."""
@@ -196,13 +226,14 @@ class Archer:
             target.vie -= self.attaque
 
     def draw(self, screen):
-        """Affiche l'unité sur l'écran."""
-        color = BLUE if self.team == 'player1' else RED
         if self.is_selected:
             pygame.draw.rect(screen, GREEN, (self.x * CELL_SIZE,
-                             self.y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
-        pygame.draw.circle(screen, color, (self.x * CELL_SIZE + CELL_SIZE //
-                           2, self.y * CELL_SIZE + CELL_SIZE // 2), CELL_SIZE // 3)
+                                             self.y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+        # Choose the image based on the player
+        image = self.image_player1 if self.team == 'player1' else self.image_player2
+        # Draw the selected image
+        if image:
+            screen.blit(image, (self.x * CELL_SIZE, self.y * CELL_SIZE))
 
     def fleche_de_guerison(self,target):
         #Tire un fleche qui soigne ses aliés 
@@ -290,6 +321,12 @@ class Magicien:
         self.is_selected = False
         self.energie = energie
 
+        self.image_player1 = pygame.image.load("PersosBoard/wizard1.png").convert_alpha()
+        self.image_player1 = pygame.transform.scale(self.image_player1, (CELL_SIZE, CELL_SIZE))
+
+        self.image_player2 = pygame.image.load("PersosBoard/wizard2.png").convert_alpha()
+        self.image_player2 = pygame.transform.scale(self.image_player2, (CELL_SIZE, CELL_SIZE))
+
     def move(self, dx, dy, all_units):
         """Move the unit by dx, dy if within grid bounds and target cell is unoccupied."""
         target_x = self.x + dx
@@ -315,13 +352,14 @@ class Magicien:
             target.vie -= self.attaque
 
     def draw(self, screen):
-        """Affiche l'unité sur l'écran."""
-        color = BLUE if self.team == 'player1' else RED
         if self.is_selected:
             pygame.draw.rect(screen, GREEN, (self.x * CELL_SIZE,
-                             self.y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
-        pygame.draw.circle(screen, color, (self.x * CELL_SIZE + CELL_SIZE //
-                           2, self.y * CELL_SIZE + CELL_SIZE // 2), CELL_SIZE // 3)
+                                             self.y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+        # Choose the image based on the player
+        image = self.image_player1 if self.team == 'player1' else self.image_player2
+        # Draw the selected image
+        if image:
+            screen.blit(image, (self.x * CELL_SIZE, self.y * CELL_SIZE))
 
 class Assassin:
     """
@@ -384,6 +422,12 @@ class Assassin:
         self.is_selected = False
         self.energie = energie
 
+        self.image_player1 = pygame.image.load("PersosBoard/assasin1.png").convert_alpha()
+        self.image_player1 = pygame.transform.scale(self.image_player1, (CELL_SIZE, CELL_SIZE))
+
+        self.image_player2 = pygame.image.load("PersosBoard/assasin2.png").convert_alpha()
+        self.image_player2 = pygame.transform.scale(self.image_player2, (CELL_SIZE, CELL_SIZE))
+
     def move(self, dx, dy, all_units):
         """Move the unit by dx, dy if within grid bounds and target cell is unoccupied."""
         target_x = self.x + dx
@@ -409,11 +453,12 @@ class Assassin:
             target.vie -= self.attaque
 
     def draw(self, screen):
-        """Affiche l'unité sur l'écran."""
-        color = BLUE if self.team == 'player1' else RED
         if self.is_selected:
             pygame.draw.rect(screen, GREEN, (self.x * CELL_SIZE,
-                             self.y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
-        pygame.draw.circle(screen, color, (self.x * CELL_SIZE + CELL_SIZE //
-                           2, self.y * CELL_SIZE + CELL_SIZE // 2), CELL_SIZE // 3)
+                                             self.y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+        # Choose the image based on the player
+        image = self.image_player1 if self.team == 'player1' else self.image_player2
+        # Draw the selected image
+        if image:
+            screen.blit(image, (self.x * CELL_SIZE, self.y * CELL_SIZE))
         

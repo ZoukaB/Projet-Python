@@ -1,7 +1,7 @@
 import sys
 import pygame
 import random
-from unit_fullscreen import *
+from unit_fullscreen_attack import *
 from Display_Attack import *
 
 # Character names and image file paths (replace with actual image paths)
@@ -34,7 +34,7 @@ class Game:
         self.reset_jeu = False  # Flag to reset
         self.display = Display(self.screen, self)
 
-        # Generate objects and the start of the game
+        # Generate objects at the start of the game
         self.generate_objects()
 
     def generate_objects(self):
@@ -48,7 +48,7 @@ class Game:
         for obj in self.display.objects:  # Iterate over the map objects
             if obj.x == x and obj.y == y:
                 return True  # If there is an object on the cell, returns True
-        return False  # If there is not object, retuns False        
+        return False  # If there is not object, returns False        
     
     def check_victory(self):
         """Verify if there's a winner."""
@@ -232,6 +232,13 @@ class Game:
                                                             # Confirm attack
                                                             enemy = enemies_in_range[selected_enemy_index]
                                                             damage = selected_unit.attack(enemy)
+                                                            if isinstance(selected_unit, Archer):
+                                                                damage = selected_unit.attack_with_animation(enemy, self, self.screen)
+                                                                
+                                                            if isinstance(selected_unit, Magicien):
+                                                                damage = selected_unit.attack_with_animation(enemy, self, self.screen)    
+                                                            else:
+                                                                damage = selected_unit.attack(enemy) 
                                                             self.display.show_message(f"{selected_unit.__class__.__name__} inflicted {damage} of damage to {enemy.__class__.__name__}!")
                                                         
                                                             if enemy.vie <= 0:
