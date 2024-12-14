@@ -2,16 +2,24 @@ import sys
 import pygame
 import random
 from unit_fullscreen import *
+from Personnages import *
 
-CHARACTER_OPTIONS = [
-    {"name": "Guerrier", "stats": (0, 0, 4, 4, 4, 4, 5, 4, 5,10, 10)},
-    {"name": "Archer", "stats": (0, 0, 5, 3, 5, 3, 4, 3, 4, 4,10)},
-    {"name": "Magicien", "stats": (0, 0, 3, 6, 2, 5, 3, 2, 2, 2,10)},
-    {"name": "Assassin", "stats": (0, 0, 6, 2, 4, 4, 4, 4, 10, 10,10)},
-    {"name": "Guerrier2", "stats": (0, 10, 4, 4, 4, 4, 5, 4, 10,10, 10)},
-    {"name": "Archer2", "stats": (0, 0, 5, 3, 5, 3, 4, 3, 4, 4,10)},
-    {"name": "Magicien2", "stats": (0, 0, 3, 6, 2, 5, 3, 2, 2, 2,10)},
-    {"name": "Assassin2", "stats": (0, 0, 6, 2, 4, 4, 4, 4, 10, 10,10)}
+CHARACTER_OPTIONS_p1 = [
+    #
+    {"name": "Guerrier", "stats": (4, 5, 4, 5,10, 10,10)},
+    {"name": "Archer", "stats": (5, 4, 3, 4, 4,10,10)},
+    {"name": "Magicien", "stats": (3, 3, 2, 2, 2,10,10)},
+    {"name": "Assassin", "stats": (6, 4, 4, 10, 10,10,10)},
+    {"name": "Infirmier", "stats": (4, 5, 4, 10,10, 10,10)},
+]
+
+CHARACTER_OPTIONS_p2 = [
+    #
+    {"name": "Guerrier2", "stats": (4, 5, 4, 5,10, 10,10)},
+    {"name": "Archer2", "stats": (5, 4, 3, 4, 4,10,10)},
+    {"name": "Magicien2", "stats": (3, 3, 2, 2, 2,10,10)},
+    {"name": "Assassin2", "stats": (6, 4, 4, 10, 10,10,10)},
+    {"name": "Infirmier", "stats": (4, 5, 4, 10,10, 10,10)},
 ]
 
 class Display:
@@ -22,6 +30,7 @@ class Display:
         self.background_image = pygame.image.load("background.jpg").convert()
         self.background_image = pygame.transform.scale(self.background_image, (WIDTH, HEIGHT))
         
+        self.font = pygame.font.Font(None, 74)  # Usando una fuente predeterminada con tamaño 74
         # Load background image for the board
         self.BoardBackground = pygame.image.load("backgroundGame.png").convert()
         self.BoardBackground = pygame.transform.scale(self.BoardBackground, (WIDTH,HEIGHT))
@@ -32,6 +41,7 @@ class Display:
             "Archer": pygame.image.load("Images_persos/Archer1.png").convert_alpha(),
             "Magicien": pygame.image.load("Images_persos/Wizard1.png").convert_alpha(),
             "Assassin": pygame.image.load("Images_persos/Assasin1.png").convert_alpha(),
+            "Infirmier": pygame.image.load("Images_persos/archer.jpg").convert_alpha(),
             "Guerrier2": pygame.image.load("Images_persos/Warrior2.png").convert_alpha(),
             "Archer2": pygame.image.load("Images_persos/Archer2.png").convert_alpha(),
             "Magicien2": pygame.image.load("Images_persos/Wizard2.png").convert_alpha(),
@@ -194,32 +204,34 @@ class Display:
         
     def character_choice_screen(self):
         # Font for button and text
-        font = pygame.font.Font(None, 36)
-        small_font = pygame.font.Font(None, 24)
+        font = pygame.font.Font(None, 48)
+        small_font = pygame.font.Font(None, 32)
         
         # Button to go back to the menu
-        back_button = pygame.Rect(WIDTH - 150, HEIGHT - 60, 120, 40)
+        back_button = pygame.Rect(WIDTH - 170, HEIGHT - 70, 140, 50)
 
         # Button for starting the game
-        start_button = pygame.Rect(WIDTH // 2 - 62, HEIGHT - 70, 125, 50)
+        start_button = pygame.Rect(WIDTH // 2 - 75, HEIGHT - 80, 150, 60)
 
         # Resize character images to fit larger squares
+        IMAGE_SIZE = 120  # New image size (increased from 100)
         for key in self.character_images:
-            self.character_images[key] = pygame.transform.scale(self.character_images[key], (100, 100))
+            self.character_images[key] = pygame.transform.scale(self.character_images[key], (IMAGE_SIZE, IMAGE_SIZE))
 
-        # Positions for Player 1 and Player 2 character choices (two columns each)
+        # Positions for Player 1 and Player 2 character choices (two vertical columns)
+        player1_x = WIDTH // 4 - 80  # Center Player 1's columns on the left quarter of the screen
+        player2_x = 3 * WIDTH // 4 - 40  # Center Player 2's columns on the right quarter of the screen
+
         player1_choice_positions = [
-            (100, 150), (250, 150),
-            (100, 300), (250, 300),
-            (100, 450), (250, 450),
-            (100, 600), (250, 600)
-            
+            (player1_x, 200), (player1_x + 200, 200),
+            (player1_x, 400), (player1_x + 200, 400),
+            (player1_x + 100, 600)
         ]
+
         player2_choice_positions = [
-            (WIDTH - 300, 150), (WIDTH - 150, 150),
-            (WIDTH - 300, 300), (WIDTH - 150, 300),
-            (WIDTH - 300, 450), (WIDTH - 150, 450),
-            (WIDTH - 300, 600), (WIDTH - 150, 600)
+            (player2_x, 200), (player2_x + 200, 200),
+            (player2_x, 400), (player2_x + 200, 400),
+            (player2_x + 100, 600)
         ]
 
         # Selections for Player 1 and Player 2
@@ -228,13 +240,12 @@ class Display:
 
         # Initialize starting positions for each player's units
         player1_positions = [(i, 0) for i in range(2)]
-        #player2_positions = [(GRID_COLUMNS - i, GRID_ROWS - 1) for i in range(1, 3)]
         player2_positions = [(4 - i, 4 - 1) for i in range(1, 3)]
+        # player2_positions = [(GRID_COLUMNS - i, GRID_ROWS - 1) for i in range(1, 3)]
 
         # Main loop for the home screen
         running = True
         while running:
-            #self.screen.fill(BLACK)
             self.draw_semi_transparent_background()  # Draw the semi-transparent background
 
             # Draw instructions
@@ -243,46 +254,50 @@ class Display:
 
             # Draw Player 1's character choices
             player1_text = font.render("Player 1", True, BLUE)
-            self.screen.blit(player1_text, (150 - player1_text.get_width() // 2, 50))
-            for i, option in enumerate(CHARACTER_OPTIONS):
+            self.screen.blit(player1_text, (player1_x + 50, 50))
+            for i, option in enumerate(CHARACTER_OPTIONS_p1):
                 x, y = player1_choice_positions[i]
-                pygame.draw.rect(self.screen, WHITE, (x - 50, y - 50, 100, 100), 2)
-                self.screen.blit(self.character_images[option["name"]], (x - 50, y - 50))
+                pygame.draw.rect(self.screen, WHITE, (x - 60, y - 60, IMAGE_SIZE, IMAGE_SIZE), 2)
+                self.screen.blit(self.character_images[option["name"]], (x - 60, y - 60))
 
                 # Draw character name below the image
                 name_text = small_font.render(option["name"], True, WHITE)
-                self.screen.blit(name_text, (x - name_text.get_width() // 2, y + 60))
+                self.screen.blit(name_text, (x - name_text.get_width() // 2, y + 70))
 
                 # Highlight selection
                 if option["name"] in player1_selection:
-                    pygame.draw.rect(self.screen, BLUE, (x - 50, y - 50, 100, 100), 4)
+                    pygame.draw.rect(self.screen, BLUE, (x - 60, y - 60, IMAGE_SIZE, IMAGE_SIZE), 4)
 
             # Draw Player 2's character choices
             player2_text = font.render("Player 2", True, RED)
-            self.screen.blit(player2_text, (WIDTH - 200 - player2_text.get_width() // 2, 50))
-            for i, option in enumerate(CHARACTER_OPTIONS):
+            self.screen.blit(player2_text, (player2_x + 50, 50))
+            for i, option in enumerate(CHARACTER_OPTIONS_p2):
                 x, y = player2_choice_positions[i]
-                pygame.draw.rect(self.screen, WHITE, (x - 50, y - 50, 100, 100), 2)
-                self.screen.blit(self.character_images[option["name"]], (x - 50, y - 50))
+                pygame.draw.rect(self.screen, WHITE, (x - 60, y - 60, IMAGE_SIZE, IMAGE_SIZE), 2)
+                self.screen.blit(self.character_images[option["name"]], (x - 60, y - 60))
 
                 # Draw character name below the image
                 name_text = small_font.render(option["name"], True, WHITE)
-                self.screen.blit(name_text, (x - name_text.get_width() // 2, y + 60))
+                self.screen.blit(name_text, (x - name_text.get_width() // 2, y + 70))
 
                 # Highlight selection
                 if option["name"] in player2_selection:
-                    pygame.draw.rect(self.screen, RED, (x - 50, y - 50, 100, 100), 4)
+                    pygame.draw.rect(self.screen, RED, (x - 60, y - 60, IMAGE_SIZE, IMAGE_SIZE), 4)
 
             # Draw the Start button
             pygame.draw.rect(self.screen, WHITE, start_button)
             start_text = font.render("Start", True, BLACK)
             self.screen.blit(start_text, (start_button.x + (start_button.width - start_text.get_width()) // 2,
                                           start_button.y + (start_button.height - start_text.get_height()) // 2))
+
             # Draw back button
             pygame.draw.rect(self.screen, WHITE, back_button)
             back_text = font.render("Retour", True, BLACK)
             self.screen.blit(back_text, (back_button.x + (back_button.width - back_text.get_width()) // 2,
                                          back_button.y + (back_button.height - back_text.get_height()) // 2))
+
+            pygame.display.flip()
+
 
             # Event handling
             for event in pygame.event.get():
@@ -294,7 +309,7 @@ class Display:
                     mouse_pos = pygame.mouse.get_pos()
     
                     # Check if a Player 1 character was clicked
-                    for i, option in enumerate(CHARACTER_OPTIONS):
+                    for i, option in enumerate(CHARACTER_OPTIONS_p1):
                         x, y = player1_choice_positions[i]
                         rect = pygame.Rect(x - 50, y - 50, 100, 100)
 
@@ -306,25 +321,19 @@ class Display:
                                 player1_selection.append(option["name"])
                                 px, py = player1_positions[len(player1_selection) - 1]
                                 if option["name"] == 'Guerrier':
-                                    self.game.player1_units.append(Guerrier(px, py, *option["stats"][2:], 'player1'))
+                                    self.game.player1_units.append(Guerrier(px, py, *option["stats"], 'player1'))
                                 if option["name"] == 'Archer':
-                                    self.game.player1_units.append(Archer(px, py, *option["stats"][2:], 'player1'))
+                                    self.game.player1_units.append(Archer(px, py, *option["stats"], 'player1'))
                                 if option["name"] == 'Magicien':
-                                    self.game.player1_units.append(Magicien(px, py, *option["stats"][2:], 'player1'))
+                                    self.game.player1_units.append(Magicien(px, py, *option["stats"], 'player1'))
                                 if option["name"] == 'Assassin':
-                                    self.game.player1_units.append(Assassin(px, py, *option["stats"][2:], 'player1'))
-                                if option["name"] == 'Guerrier2':
-                                    self.game.player1_units.append(Guerrier(px, py, *option["stats"][2:], 'player1'))
-                                if option["name"] == 'Archer2':
-                                    self.game.player1_units.append(Archer(px, py, *option["stats"][2:], 'player1'))
-                                if option["name"] == 'Magicien2':
-                                    self.game.player1_units.append(Magicien(px, py, *option["stats"][2:], 'player1'))
-                                if option["name"] == 'Assassin2':
-                                    self.game.player1_units.append(Assassin(px, py, *option["stats"][2:], 'player1'))
+                                    self.game.player1_units.append(Assassin(px, py, *option["stats"], 'player1'))
+                                if option["name"] == 'Infirmier':
+                                    self.game.player1_units.append(Infirmier(px, py, *option["stats"], 'player1'))
 
 
                     # Check if a Player 2 character was clicked
-                    for i, option in enumerate(CHARACTER_OPTIONS):
+                    for i, option in enumerate(CHARACTER_OPTIONS_p2):
                         x, y = player2_choice_positions[i]
                         rect = pygame.Rect(x - 50, y - 50, 100, 100)
 
@@ -335,22 +344,16 @@ class Display:
                             elif option["name"] not in player2_selection and len(player2_selection) < 2:
                                 player2_selection.append(option["name"])
                                 px, py = player2_positions[len(player2_selection) - 1]
-                                if option["name"] == 'Guerrier':
-                                    self.game.player2_units.append(Guerrier(px, py, *option["stats"][2:], 'player2'))
-                                if option["name"] == 'Archer':
-                                    self.game.player2_units.append(Archer(px, py, *option["stats"][2:], 'player2'))
-                                if option["name"] == 'Magicien':
-                                    self.game.player2_units.append(Magicien(px, py, *option["stats"][2:], 'player2'))
-                                if option["name"] == 'Assassin':
-                                    self.game.player2_units.append(Assassin(px, py, *option["stats"][2:], 'player2'))
                                 if option["name"] == 'Guerrier2':
-                                    self.game.player2_units.append(Guerrier(px, py, *option["stats"][2:], 'player2'))
+                                    self.game.player2_units.append(Guerrier(px, py, *option["stats"], 'player2'))
                                 if option["name"] == 'Archer2':
-                                    self.game.player2_units.append(Archer(px, py, *option["stats"][2:], 'player2'))
+                                    self.game.player2_units.append(Archer(px, py, *option["stats"], 'player2'))
                                 if option["name"] == 'Magicien2':
-                                    self.game.player2_units.append(Magicien(px, py, *option["stats"][2:], 'player2'))
+                                    self.game.player2_units.append(Magicien(px, py, *option["stats"], 'player2'))
                                 if option["name"] == 'Assassin2':
-                                    self.game.player2_units.append(Assassin(px, py, *option["stats"][2:], 'player2'))
+                                    self.game.player2_units.append(Assassin(px, py, *option["stats"], 'player2'))
+                                if option["name"] == 'Infirmier':
+                                    self.game.player2_units.append(Infirmier(px, py, *option["stats"], 'player2'))
                                     
                     if back_button.collidepoint(mouse_pos):  
                         self.initialize_main_menu()
@@ -419,8 +422,7 @@ class Display:
             second_column_x = menu_x + column_width
             second_column_stats = [
                 f"Attaque: {selected_unit.attaque}",
-                f"Défense: {selected_unit.defense}",
-                f"Tir: {selected_unit.tir}",
+                f"Vie: {selected_unit.vie}",
             ]
 
             for i, line in enumerate(second_column_stats):
@@ -430,9 +432,9 @@ class Display:
             # === Third Column: Remaining 2 stats ===
             third_column_x = menu_x + 2 * column_width
             third_column_stats = [
-                f"Force: {selected_unit.force}",
-                f"Combat: {selected_unit.combat}",
+                f"Défense: {selected_unit.defense}",
                 f"Energie: {selected_unit.energie}",
+                f"Energie Max: {selected_unit.max_energie}",
             ]
 
             for i, line in enumerate(third_column_stats):
@@ -445,23 +447,23 @@ class Display:
             bottom_lines.append("Capacités spéciales")
 
             # Determine second and third lines based on unit
-            if unit_name == 'Guerrier':
+            if isinstance(selected_unit,Guerrier):
                 bottom_lines.append(f"  Boisson du Guerrier: {selected_unit.boisson_du_guerrier} restantes")
                 bottom_lines.append(f"  Capacité téméraire: {selected_unit.temeraire_actif}")
-            elif unit_name == 'Archer':
+            elif isinstance(selected_unit,Archer):
                 bottom_lines.append(f"  Fleches de guérison: {selected_unit.fleche_soigneuse} restantes")
                 bottom_lines.append(f"  Capacité headshot: {selected_unit.headshot_actif}")
-            elif unit_name == 'Magicien':
+            elif isinstance(selected_unit,Magicien):
                 for unit in self.game.player2_units:
                     if unit.empoisonné:
                         bottom_lines.append(f"  Sort de poison {unit.empoisonné} sur {unit.__class__.__name__}")
                 bottom_lines.append(f"   Boule de feu: {selected_unit.stock_boule_de_feu} restantes")
-            elif unit_name == 'Assassin':
-                bottom_lines.append("  Attaque furtive: Se déplace silencieusement")
-                bottom_lines.append("  Effet: Bonus de dégât si non détecté")
-            else:
-                bottom_lines.append("  Aucune capacité spéciale connue")
-                bottom_lines.append("  Effet: N/A")
+            elif isinstance(selected_unit,Assassin):
+                bottom_lines.append(f"  Coup fatal: {selected_unit.fatality} restant")
+                bottom_lines.append("  Fuite: permet de se téléporter loin des enemis")
+            elif isinstance(selected_unit,Infirmier):
+                bottom_lines.append(f"  Potions de soin: {selected_unit.potions_de_soin} restantes")
+                bottom_lines.append(f"  Soin intensif: utilise 5 d'énergie")
 
             # Bigger font and spacing
             bottom_font = pygame.font.Font(None, 28)
@@ -527,6 +529,13 @@ class Display:
             self.screen.blit(prompt_surface, (prompt_x, prompt_y))
             self.screen.blit(option1_surface, (option1_x, option1_y))
             self.screen.blit(option2_surface, (option2_x, option2_y))
+            
+            if selected_unit.team == 'player1':
+                ennemis = self.game.player2_units
+                allies = self.game.player1_units
+            else:
+                ennemis = self.game.player1_units
+                allies = self.game.player2_units
 
             # Handle events
             for event in pygame.event.get():
@@ -539,12 +548,12 @@ class Display:
                         # Handle special ability selection
                         if event.key == pygame.K_1:
                             
-                            if selected_unit.__class__.__name__ == 'Guerrier':
+                            if isinstance(selected_unit,Guerrier):
                                 selected_unit.boisson_guerrier()
-                                print("Boisson du guerrier activated!")
+                                self.affiche_message_haut(selected_unit.boisson_guerrier())
                                 capacity_choice = False
                                 
-                            if selected_unit.__class__.__name__ == 'Archer':
+                            if isinstance(selected_unit,Archer):
                                 capacity_choice = False  # Close the capacity menu
                                 self.flip_display_basic(selected_unit) 
                                 self.affiche_message_centre("Veuillez sélectionner un allié à soigner")
@@ -559,17 +568,17 @@ class Display:
                                         if event.type == pygame.MOUSEBUTTONDOWN:
                                             mouse_x, mouse_y = pygame.mouse.get_pos()
                                             # Check if the mouse click intersects with any unit's position
-                                            for unit in self.game.player1_units:
+                                            for unit in allies:
                                                 if (abs(selected_unit.x - unit.x) <= selected_unit.attack_range and abs(selected_unit.y - unit.y) == 0) or (abs(selected_unit.y - unit.y) <= selected_unit.attack_range and abs(selected_unit.x - unit.x) ==0):
                                                     unit_rect = pygame.Rect(unit.x * CELL_SIZE, unit.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
                                                     if unit_rect.collidepoint(mouse_x, mouse_y):
-                                                        selected_unit.fleche_de_guerison(unit)
+                                                        self.affiche_message_haut(selected_unit.fleche_de_guerison(unit))
                                                         wainting_selection = False
                                                 else:
                                                     self.affiche_message_centre("Allié trop loin pour pouvoir être soigné")
                                                     wainting_selection = False
                         
-                            if selected_unit.__class__.__name__ == 'Magicien':
+                            if isinstance(selected_unit,Magicien):
                                 capacity_choice = False  # Close the capacity menu
                                 self.flip_display_basic(selected_unit) 
                                 self.affiche_message_centre("Veuillez sélectionner un enemie à empoisoner")
@@ -584,7 +593,7 @@ class Display:
                                         if event.type == pygame.MOUSEBUTTONDOWN:
                                             mouse_x, mouse_y = pygame.mouse.get_pos()
                                             # Check if the mouse click intersects with any unit's position
-                                            for unit in self.game.player2_units:
+                                            for unit in ennemis:
                                                 if abs(selected_unit.x - unit.x) <= selected_unit.attack_range and abs(selected_unit.y - unit.y) <= selected_unit.attack_range:
                                                     unit_rect = pygame.Rect(unit.x * CELL_SIZE, unit.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
                                                     if unit_rect.collidepoint(mouse_x, mouse_y):
@@ -594,19 +603,60 @@ class Display:
                                                 else:
                                                     self.affiche_message_centre("Allié trop loin pour pouvoir être soigné")
                                                     wainting_selection = False
-                                            
+                            
+                            if isinstance(selected_unit,Assassin):
+                                self.affiche_message_haut(selected_unit.coup_fatal())
+                                capacity_choice = False         
+                        
+                            if isinstance(selected_unit,Infirmier):
+                                capacity_choice = False  # Close the capacity menu
+                                self.flip_display_basic(selected_unit)
+                                self.affiche_message_centre("Choisir qui où vous voulez lancer la potion")
+                                pygame.display.flip()
+
+                                # Waiting for the player to click on a cell
+                                waiting_selection = True
+                                while waiting_selection:
+                                    for event in pygame.event.get():
+                                        if event.type == pygame.QUIT:
+                                            pygame.quit()
+                                            exit()
+
+                                        if event.type == pygame.MOUSEBUTTONDOWN:
+                                            mouse_x, mouse_y = pygame.mouse.get_pos()
+                                            target_x = mouse_x // CELL_SIZE
+                                            target_y = mouse_y // CELL_SIZE
+
+                                            # Highlight the target cell and its perimeter
+                                            self.flip_display_basic(selected_unit)
+                                            for dx in range(-1, 2):
+                                                for dy in range(-1, 2):
+                                                    cell_x = target_x + dx
+                                                    cell_y = target_y + dy
+                                                    if 0 <= cell_x < GRID_COLUMNS and 0 <= cell_y < GRID_ROWS:
+                                                        cell_rect = pygame.Rect(cell_x * CELL_SIZE, cell_y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                                                        highlight = pygame.Surface((CELL_SIZE, CELL_SIZE))
+                                                        highlight.set_alpha(100)
+                                                        highlight.fill((0, 165, 0))  # Transparent orange
+                                                        self.screen.blit(highlight, cell_rect)
+
+                                            pygame.display.flip()
+                                            # Keep the display visible for 2 seconds (2000 milliseconds)
+                                            pygame.time.wait(2000)
+                                            self.affiche_message_haut(selected_unit.potion_soin(target_x,target_y,allies))
+                                            waiting_selection = False
+                                
                         elif event.key == pygame.K_2:
                             
-                            if selected_unit.__class__.__name__ == 'Guerrier':
-                                selected_unit.temeraire()
-                                print("Téméraire activated!")
+                            if isinstance(selected_unit,Guerrier):
+                                self.affiche_message_haut(selected_unit.temeraire())
                                 capacity_choice = False
                             
-                            if selected_unit.__class__.__name__ == 'Archer':
-                                selected_unit.headshot()
+                            if isinstance(selected_unit,Archer):
+                                self.affiche_message_haut(selected_unit.headshot())
                                 capacity_choice = False
                                 
-                            if selected_unit.__class__.__name__ == 'Magicien':
+                            if isinstance(selected_unit,Magicien):
                                 capacity_choice = False  # Close the capacity menu
                                 self.flip_display_basic(selected_unit)
                                 self.affiche_message_centre("Cliquez pour lancer la boule de feu")
@@ -641,13 +691,105 @@ class Display:
                                             pygame.display.flip()
                                             # Keep the display visible for 2 seconds (2000 milliseconds)
                                             pygame.time.wait(2000)
-                                            selected_unit.boule_de_feu(target_x, target_y, self.game.player2_units)
+                                            self.affiche_message_haut(selected_unit.boule_de_feu(target_x, target_y, ennemis))
                                             waiting_selection = False
 
+                            if isinstance(selected_unit,Assassin):
+                                capacity_choice = False  # Close the capacity menu
+                                self.flip_display_basic(selected_unit)
+                                self.affiche_message_centre("Cliquez sur la case où vous voulez fuire")
+                                pygame.display.flip()
 
+                                # Waiting for the player to click on a cell
+                                waiting_selection = True
+                                while waiting_selection:
+                                    for event in pygame.event.get():
+                                        if event.type == pygame.QUIT:
+                                            pygame.quit()
+                                            exit()
+
+                                        if event.type == pygame.MOUSEBUTTONDOWN:
+                                            mouse_x, mouse_y = pygame.mouse.get_pos()
+                                            target_x = mouse_x // CELL_SIZE
+                                            target_y = mouse_y // CELL_SIZE
+                                            self.affiche_message_haut(selected_unit.fuite(target_x,target_y))
+                                            self.flip_display_basic(selected_unit)
+                                            waiting_selection = False
+
+                            if isinstance(selected_unit, Infirmier):
+                                capacity_choice = False  # Close the capacity menu
+                                self.flip_display_basic(selected_unit)
+                                self.affiche_message_centre("Lancer soin intensif")
+
+                                # Define the list of allies (assuming player1_units are allies for the Infirmier)
+                                self.flip_display_basic(selected_unit)  # Redraw the basic display first
+
+                                # Loop through all cells within the healing range
+                                for dx in range(-selected_unit.healing_range, selected_unit.healing_range + 1):
+                                    for dy in range(-selected_unit.healing_range, selected_unit.healing_range + 1):
+                                        cell_x = selected_unit.x + dx
+                                        cell_y = selected_unit.y + dy
+                                        distance = abs(dx) + abs(dy)
+
+                                        # Check if within grid boundaries and within healing range
+                                        if 0 <= cell_x < GRID_COLUMNS and 0 <= cell_y < GRID_ROWS and distance <= selected_unit.healing_range:
+                                            cell_rect = pygame.Rect(cell_x * CELL_SIZE, cell_y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                                            highlight = pygame.Surface((CELL_SIZE, CELL_SIZE))
+                                            highlight.set_alpha(100)
+                                            highlight.fill((0, 255, 0))  # Transparent green
+                                            self.screen.blit(highlight, cell_rect)
+
+                                # Update the display to show the highlighted area
+                                pygame.display.flip()
+
+                                # Apply the healing effect
+                                self.affiche_message_haut(selected_unit.soin_intensif(allies))
+
+                                # Wait for 2 seconds to display the highlighted area before continuing
+                                pygame.time.wait(1000)
+                                self.flip_display_basic(selected_unit)  # Redraw the screen to clear highlights
+                                pygame.display.flip()
+                                
+                                
             # Update the display
             pygame.display.flip() 
             
+    def show_victory_message(self, message, confetti_color=(255, 255, 255)):
+        # Code for the confetti
+        confetti_particles = []  # list for the confetti
+        for _ in range(150):
+            x = random.randint(0, WIDTH)
+            y = random.randint(-HEIGHT, 0)
+            speed = random.uniform(2, 5)
+            size = random.randint(2, 5)
+            confetti_particles.append({"x": x, "y": y, "speed": speed, "size": size})  
+        # Show message and animation
+        start_time = pygame.time.get_ticks()
+        duration = 10000
+        while pygame.time.get_ticks() - start_time < duration:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+            self.screen.fill(BLACK)
+            text = self.font.render(message, True, (255, 255, 255))
+            text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 3))
+            self.screen.blit(text, text_rect)
+
+            for particle in confetti_particles:
+                particle["y"] += particle["speed"]
+                if particle["y"] > HEIGHT:
+                    particle["y"] = random.randint(-HEIGHT, 0)
+                    particle["x"] = random.randint(0, WIDTH)
+                pygame.draw.circle(self.screen, confetti_color, (particle["x"], int(particle["y"])), particle["size"])
+
+            pygame.display.flip()
+            pygame.time.delay(30)        
+            # After confetti end, close game
+        pygame.quit()
+        sys.exit()        
+    
     def affiche_message_centre(self, message, taille_police=48, couleur=(255, 255, 255), duree=1000):
         # Initialiser la police
         font = pygame.font.Font(None, taille_police)
@@ -664,6 +806,29 @@ class Display:
 
         # Afficher le texte
         self.screen.blit(texte_surface, (texte_x, texte_y))
+
+        # Mettre à jour l'affichage
+        pygame.display.flip()
+
+        # Attendre pendant la durée spécifiée
+        pygame.time.wait(duree)
+
+    def affiche_message_haut(self, message, taille_police=48, couleur=(255, 255, 255), duree=1000):
+        # Initialiser la police
+        font = pygame.font.Font(None, taille_police)
+
+        # Créer le rendu du texte
+        texte_surface = font.render(message, True, couleur)
+
+        # Obtenir les dimensions de l'écran
+        largeur_ecran, hauteur_ecran = self.screen.get_size()
+
+        # Calculer la position pour centrer le texte
+        texte_x = (largeur_ecran - texte_surface.get_width()) // 2
+        texte_y = (hauteur_ecran - texte_surface.get_height()) // 2
+
+        # Afficher le texte
+        self.screen.blit(texte_surface, (texte_x, texte_y-200))
 
         # Mettre à jour l'affichage
         pygame.display.flip()
