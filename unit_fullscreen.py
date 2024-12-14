@@ -90,7 +90,7 @@ class Guerrier:
         self.capacités = ['Boisson du guerrier','Téméraire']
         self.boisson_du_guerrier = 3
         self.attack_range = 1
-        self.temeraire_active = False
+        self.temeraire_actif = False
         
     def attack(self, target): #10% de chance de doubler ses dégats
         """Attaque une unité cible."""
@@ -112,7 +112,7 @@ class Guerrier:
     
     def temeraire(self): #Assure des dégats doublé mais utilise de l'énergie
         if self.energie >= 5:
-            self.temeraire_active = True
+            self.temeraire_actif = True
             self.energie -= 5
             self.attaque = 2*self.attaque
         else:
@@ -120,7 +120,7 @@ class Guerrier:
 
     def desactive_temeraire(self):
         self.attaque = self.attaque // 2
-        self.temeraire = False
+        self.temeraire_actif = False
 
     def move(self, dx, dy, all_units):
         """Move the unit by dx, dy if within grid bounds and target cell is unoccupied."""
@@ -170,6 +170,8 @@ class Archer:
         self.fleche_soigneuse = 3
         self.energie = energie
         self.headshot_actif = False
+        self.empoisonné = False
+        self.compteur = 0
 
     def move(self, dx, dy, all_units):
         """Move the unit by dx, dy if within grid bounds and target cell is unoccupied."""
@@ -192,7 +194,7 @@ class Archer:
 
     def attack(self, target):
         """Attaque une unité cible."""
-        if abs(self.x - target.x) <= self.attack_range or abs(self.y - target.y) <= self.attack_range:
+        if (abs(self.x - target.x) <= self.attack_range and abs(self.y-target.y == 0)) or (abs(self.y - target.y) <= self.attack_range and abs(self.x-target.x == 0)):
             target.vie -= self.attaque
 
     def draw(self, screen):
@@ -227,55 +229,16 @@ class Archer:
         self.attaque = self.attaque//3
         self.headshot_actif = False
 
+    def poison_actif(self):
+        if self.empoisonné:
+            self.vie -= 1
+            self.compteur -= 1
+            if self.compteur <= 0:
+                self.empoisonné = False
         
 
 class Magicien:
-    """
-    Classe pour représenter une unité.
-
-    ...
-    Attributs
-    ---------
-    x : int
-        La position x de l'unité sur la grille.
-    y : int
-        La position y de l'unité sur la grille.
-    vie : int
-        La santé de l'unité.
-    attaque : int
-        La puissance d'attaque de l'unité.
-    team : str
-        L'équipe de l'unité ('player' ou 'enemy').
-    is_selected : bool
-        Si l'unité est sélectionnée ou non.
-
-    Méthodes
-    --------
-    move(dx, dy)
-        Déplace l'unité de dx, dy.
-    attack(target)
-        Attaque une unité cible.
-    draw(screen)
-        Dessine l'unité sur la grille.
-    """
-
     def __init__(self, x, y,mouvement,combat,tir,force,defense,attaque,vie,max_vie,energie,team):
-        """
-        Construit une unité avec une position, une santé, une puissance d'attaque et une équipe.
-
-        Paramètres
-        ----------
-        x : int
-            La position x de l'unité sur la grille.
-        y : int
-            La position y de l'unité sur la grille.
-        vie : int
-            La santé de l'unité.
-        attaque : int
-            La puissance d'attaque de l'unité.
-        team : str
-            L'équipe de l'unité ('player' ou 'enemy').
-        """
         self.x = x
         self.y = y
         self.mouvement = mouvement
@@ -288,7 +251,11 @@ class Magicien:
         self.max_vie = max_vie
         self.team = team  # 'player' ou 'enemy'
         self.is_selected = False
+        self.attack_range = 5
+        self.capacités = ["Sort de poison","Boule de feu"]
         self.energie = energie
+        self.stock_boule_de_feu = 3
+        self.poison = False
 
     def move(self, dx, dy, all_units):
         """Move the unit by dx, dy if within grid bounds and target cell is unoccupied."""
@@ -311,7 +278,7 @@ class Magicien:
 
     def attack(self, target):
         """Attaque une unité cible."""
-        if abs(self.x - target.x) <= 1 and abs(self.y - target.y) <= 1:
+        if (abs(self.x - target.x) <= self.attack_range and abs(self.y-target.y == 0)) or (abs(self.y - target.y) <= self.attack_range and abs(self.x-target.x == 0)):
             target.vie -= self.attaque
 
     def draw(self, screen):
@@ -323,6 +290,31 @@ class Magicien:
         pygame.draw.circle(screen, color, (self.x * CELL_SIZE + CELL_SIZE //
                            2, self.y * CELL_SIZE + CELL_SIZE // 2), CELL_SIZE // 3)
 
+    def sort_de_poison(self,target):
+        if self.energie >= 4:
+            self.energie -=4
+            target.empoisonné = True
+            target.compteur = 3
+        else:
+            print("Pas assez d'énergie pour utiliser ce sort")
+
+    def boule_de_feu(self, target_x, target_y, enemies):
+        if self.stock_boule_de_feu != 0:
+            for enemy in enemies:
+                if abs(enemy.x - target_x) <= 1 and abs(enemy.y - target_y) <= 1:
+                    enemy.vie -= 3
+                    # Check if the enemy has been defeated
+                    if enemy.vie <= 0:
+                        enemies.remove(enemy)
+                        print(f"{enemy.name} a été éliminé!")
+        else:
+            print("Plus de boules de feu")
+        
+                
+        
+        
+
+            
 class Assassin:
     """
     Classe pour représenter une unité.

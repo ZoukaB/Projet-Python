@@ -4,7 +4,7 @@ import random
 from unit_fullscreen import *
 
 CHARACTER_OPTIONS = [
-    {"name": "Guerrier", "stats": (0, 0, 4, 4, 4, 4, 5, 4, 10,10, 10)},
+    {"name": "Guerrier", "stats": (0, 0, 4, 4, 4, 4, 5, 4, 5,10, 10)},
     {"name": "Archer", "stats": (0, 0, 5, 3, 5, 3, 4, 3, 4, 4,10)},
     {"name": "Magicien", "stats": (0, 0, 3, 6, 2, 5, 3, 2, 2, 2,10)},
     {"name": "Assassin", "stats": (0, 0, 6, 2, 4, 4, 4, 4, 10, 10,10)},
@@ -447,13 +447,15 @@ class Display:
             # Determine second and third lines based on unit
             if unit_name == 'Guerrier':
                 bottom_lines.append(f"  Boisson du Guerrier: {selected_unit.boisson_du_guerrier} restantes")
-                bottom_lines.append("  Effet: +6 PV")
+                bottom_lines.append(f"  Capacité téméraire: {selected_unit.temeraire_actif}")
             elif unit_name == 'Archer':
-                bottom_lines.append("  Tir précis: Peut toucher des cibles éloignées")
-                bottom_lines.append("  Effet: Bonus de dégât à distance")
+                bottom_lines.append(f"  Fleches de guérison: {selected_unit.fleche_soigneuse} restantes")
+                bottom_lines.append(f"  Capacité headshot: {selected_unit.headshot_actif}")
             elif unit_name == 'Magicien':
-                bottom_lines.append("  Sorts magiques: Lance des sorts variés")
-                bottom_lines.append("  Effet: Dommages magiques ou buffs")
+                for unit in self.game.player2_units:
+                    if unit.empoisonné:
+                        bottom_lines.append(f"  Sort de poison {unit.empoisonné} sur {unit.__class__.__name__}")
+                bottom_lines.append(f"   Boule de feu: {selected_unit.stock_boule_de_feu} restantes")
             elif unit_name == 'Assassin':
                 bottom_lines.append("  Attaque furtive: Se déplace silencieusement")
                 bottom_lines.append("  Effet: Bonus de dégât si non détecté")
@@ -543,7 +545,11 @@ class Display:
                                 capacity_choice = False
                                 
                             if selected_unit.__class__.__name__ == 'Archer':
-                                self.affiche_message_centre("Veuillez séléctionner un personnage à soigner")
+                                capacity_choice = False  # Close the capacity menu
+                                self.flip_display_basic(selected_unit) 
+                                self.affiche_message_centre("Veuillez sélectionner un allié à soigner")
+                                self.flip_display_basic(selected_unit) 
+                                pygame.display.flip()
                                 wainting_selection = True
                                 while wainting_selection:
                                     for event in pygame.event.get():
@@ -554,12 +560,40 @@ class Display:
                                             mouse_x, mouse_y = pygame.mouse.get_pos()
                                             # Check if the mouse click intersects with any unit's position
                                             for unit in self.game.player1_units:
-                                                unit_rect = pygame.Rect(unit.x * CELL_SIZE, unit.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-                                                if unit_rect.collidepoint(mouse_x, mouse_y):
-                                                    selected_unit.fleche_de_guerison(unit)
-                                                    self.affiche_message_centre(f"Pv allié {unit.vie}")
+                                                if (abs(selected_unit.x - unit.x) <= selected_unit.attack_range and abs(selected_unit.y - unit.y) == 0) or (abs(selected_unit.y - unit.y) <= selected_unit.attack_range and abs(selected_unit.x - unit.x) ==0):
+                                                    unit_rect = pygame.Rect(unit.x * CELL_SIZE, unit.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                                                    if unit_rect.collidepoint(mouse_x, mouse_y):
+                                                        selected_unit.fleche_de_guerison(unit)
+                                                        wainting_selection = False
+                                                else:
+                                                    self.affiche_message_centre("Allié trop loin pour pouvoir être soigné")
                                                     wainting_selection = False
-                                                    capacity_choice = False
+                        
+                            if selected_unit.__class__.__name__ == 'Magicien':
+                                capacity_choice = False  # Close the capacity menu
+                                self.flip_display_basic(selected_unit) 
+                                self.affiche_message_centre("Veuillez sélectionner un enemie à empoisoner")
+                                self.flip_display_basic(selected_unit) 
+                                pygame.display.flip()
+                                wainting_selection = True
+                                while wainting_selection:
+                                    for event in pygame.event.get():
+                                        if event.type == pygame.QUIT:
+                                            pygame.quit()
+                                            exit()
+                                        if event.type == pygame.MOUSEBUTTONDOWN:
+                                            mouse_x, mouse_y = pygame.mouse.get_pos()
+                                            # Check if the mouse click intersects with any unit's position
+                                            for unit in self.game.player2_units:
+                                                if abs(selected_unit.x - unit.x) <= selected_unit.attack_range and abs(selected_unit.y - unit.y) <= selected_unit.attack_range:
+                                                    unit_rect = pygame.Rect(unit.x * CELL_SIZE, unit.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                                                    if unit_rect.collidepoint(mouse_x, mouse_y):
+                                                        selected_unit.sort_de_poison(unit)
+                                                        self.affiche_message_centre(f"{unit.__class__.__name__} empoisonné avec succès")
+                                                        wainting_selection = False
+                                                else:
+                                                    self.affiche_message_centre("Allié trop loin pour pouvoir être soigné")
+                                                    wainting_selection = False
                                             
                         elif event.key == pygame.K_2:
                             
@@ -571,6 +605,45 @@ class Display:
                             if selected_unit.__class__.__name__ == 'Archer':
                                 selected_unit.headshot()
                                 capacity_choice = False
+                                
+                            if selected_unit.__class__.__name__ == 'Magicien':
+                                capacity_choice = False  # Close the capacity menu
+                                self.flip_display_basic(selected_unit)
+                                self.affiche_message_centre("Cliquez pour lancer la boule de feu")
+                                pygame.display.flip()
+
+                                # Waiting for the player to click on a cell
+                                waiting_selection = True
+                                while waiting_selection:
+                                    for event in pygame.event.get():
+                                        if event.type == pygame.QUIT:
+                                            pygame.quit()
+                                            exit()
+
+                                        if event.type == pygame.MOUSEBUTTONDOWN:
+                                            mouse_x, mouse_y = pygame.mouse.get_pos()
+                                            target_x = mouse_x // CELL_SIZE
+                                            target_y = mouse_y // CELL_SIZE
+
+                                            # Highlight the target cell and its perimeter
+                                            self.flip_display_basic(selected_unit)
+                                            for dx in range(-1, 2):
+                                                for dy in range(-1, 2):
+                                                    cell_x = target_x + dx
+                                                    cell_y = target_y + dy
+                                                    if 0 <= cell_x < GRID_COLUMNS and 0 <= cell_y < GRID_ROWS:
+                                                        cell_rect = pygame.Rect(cell_x * CELL_SIZE, cell_y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                                                        highlight = pygame.Surface((CELL_SIZE, CELL_SIZE))
+                                                        highlight.set_alpha(100)
+                                                        highlight.fill((255, 165, 0))  # Transparent orange
+                                                        self.screen.blit(highlight, cell_rect)
+
+                                            pygame.display.flip()
+                                            # Keep the display visible for 2 seconds (2000 milliseconds)
+                                            pygame.time.wait(2000)
+                                            selected_unit.boule_de_feu(target_x, target_y, self.game.player2_units)
+                                            waiting_selection = False
+
 
             # Update the display
             pygame.display.flip() 
@@ -598,7 +671,12 @@ class Display:
         # Attendre pendant la durée spécifiée
         pygame.time.wait(duree)
 
-            
+    def flip_display_feu(self, target_x, target_y):
+
+        # Highlight the fireball target cell
+        target_rect = pygame.Rect(target_x * CELL_SIZE, target_y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+        pygame.draw.rect(self.screen, (255, 100, 0), target_rect, 3)  # Orange outline for targeting
+         
     def flip_display(self, selected_unit=None, hovered_cell=None):
         #self.screen.fill(BLACK)
         self.screen.blit(self.BoardBackground, (0,0)) # Board Background

@@ -150,6 +150,12 @@ class Game:
         proposed_x = None
         proposed_y = None
 
+        # Apply poison damage to all poisoned units at the beginning of the turn
+        for unit in self.player2_units:
+            unit.poison_actif()
+            if unit.vie <= 0:
+                self.player2_units.remove(unit)
+        
         # Function to select the next unmoved unit automatically
         def select_next_unit():
             for unit in self.player2_units:
@@ -163,7 +169,7 @@ class Game:
         if selected_unit:
             proposed_x, proposed_y = selected_unit.x, selected_unit.y
             hovered_cell = (proposed_x, proposed_y)
-
+        
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -247,7 +253,7 @@ class Game:
                             if selected_unit.__class__.__name__ == 'Archer' or selected_unit.__class__.__name__ == 'Magicien':
                                 if (abs(selected_unit.x - enemy.x) <= selected_unit.attack_range and abs(selected_unit.y - enemy.y) == 0) or (abs(selected_unit.y - enemy.y) <= selected_unit.attack_range and abs(selected_unit.x - enemy.x) ==0):
                                     selected_unit.attack(enemy)
-                                    print("archer attaque")
+                                    #print(f"Archer attaque {enemy.__class__.__name__}")
                                     attacked = True
                             else:
                                 if abs(selected_unit.x - enemy.x) <= selected_unit.attack_range and abs(selected_unit.y - enemy.y) <= selected_unit.attack_range:
@@ -257,14 +263,14 @@ class Game:
                             # Remove the enemy if their health is 0 or less
                             if enemy.vie <= 0:
                                 self.player2_units.remove(enemy)
-                            break  # Only one attack per turn
+                            #break  # Only one attack per turn
 
                         if not attacked:
                             print("No enemy to attack!")
 
                         # Mark the unit's turn as complete
                         #selected_unit.is_selected = False
-                        if selected_unit.__class__.__name__ == 'Guerrier' and selected_unit.temeraire_active == True:
+                        if selected_unit.__class__.__name__ == 'Guerrier' and selected_unit.temeraire_actif == True:
                             selected_unit.desactive_temeraire()
                         
                         if selected_unit.__class__.__name__ == 'Archer' and selected_unit.headshot_actif == True:
