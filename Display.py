@@ -22,6 +22,13 @@ class Display:
         self.background_image = pygame.image.load("background.jpg").convert()
         self.background_image = pygame.transform.scale(self.background_image, (WIDTH, HEIGHT))
         
+        self.objects = [] # list of objects
+        # Initialize font
+        self.font = pygame.font.Font(None, 74)  
+        self.small_font = pygame.font.Font(None, 36)  
+        self.message = ""  # Attribute 'message'
+        self.message_timer = 0 
+
         # Load background image for the board
         self.BoardBackground = pygame.image.load("backgroundGame.png").convert()
         self.BoardBackground = pygame.transform.scale(self.BoardBackground, (WIDTH,HEIGHT))
@@ -167,7 +174,8 @@ class Display:
                 "Guerrier: Puissant en attaque rapprochée.",
                 "Archer: Attaque à distance avec précision.",
                 "Magicien: Utilise des sorts puissants.",
-                "Assassin: Agile et rapide en déplacement.",
+                "Assassin: Peut achever des ennemis résistants en une seule fois."
+                "Infirmier: Peut soigner ses compagnons blessés au combat.add ",
             ]
 
             for i, line in enumerate(powers_text_lines):
@@ -313,14 +321,14 @@ class Display:
                                     self.game.player1_units.append(Magicien(px, py, *option["stats"][2:], 'player1'))
                                 if option["name"] == 'Assassin':
                                     self.game.player1_units.append(Assassin(px, py, *option["stats"][2:], 'player1'))
-                                if option["name"] == 'Guerrier2':
+                                if option["name"] == 'Infirmier':
                                     self.game.player1_units.append(Guerrier(px, py, *option["stats"][2:], 'player1'))
-                                if option["name"] == 'Archer2':
-                                    self.game.player1_units.append(Archer(px, py, *option["stats"][2:], 'player1'))
-                                if option["name"] == 'Magicien2':
-                                    self.game.player1_units.append(Magicien(px, py, *option["stats"][2:], 'player1'))
-                                if option["name"] == 'Assassin2':
-                                    self.game.player1_units.append(Assassin(px, py, *option["stats"][2:], 'player1'))
+                                # if option["name"] == 'Archer2':
+                                #     self.game.player1_units.append(Archer(px, py, *option["stats"][2:], 'player1'))
+                                # if option["name"] == 'Magicien2':
+                                #     self.game.player1_units.append(Magicien(px, py, *option["stats"][2:], 'player1'))
+                                # if option["name"] == 'Assassin2':
+                                #     self.game.player1_units.append(Assassin(px, py, *option["stats"][2:], 'player1'))
 
 
                     # Check if a Player 2 character was clicked
@@ -598,6 +606,54 @@ class Display:
         # Attendre pendant la durée spécifiée
         pygame.time.wait(duree)
 
+    def show_message(self, message, duration=2000):
+        """Shows message for the given time (miliseconds)."""
+        self.message = message
+        self.message_timer = pygame.time.get_ticks() + duration  # Store the end of message time
+
+    def draw_message(self):
+        """Shows the message on the screen."""
+        if self.message and pygame.time.get_ticks() < self.message_timer:
+            font = pygame.font.Font(None, 36)
+            text = font.render(self.message, True, (255, 255, 255))
+            text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+            self.screen.blit(text, text_rect)      
+
+    def show_victory_message(self, message, confetti_color=(255, 255, 255)):
+        # Code for the confetti
+        confetti_particles = []  # list for the confetti
+        for _ in range(150):
+            x = random.randint(0, WIDTH)
+            y = random.randint(-HEIGHT, 0)
+            speed = random.uniform(2, 5)
+            size = random.randint(2, 5)
+            confetti_particles.append({"x": x, "y": y, "speed": speed, "size": size})  
+        # Show message and animation
+        start_time = pygame.time.get_ticks()
+        duration = 10000
+        while pygame.time.get_ticks() - start_time < duration:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+            self.screen.fill(BLACK)
+            text = self.font.render(message, True, (255, 255, 255))
+            text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 3))
+            self.screen.blit(text, text_rect)
+
+            for particle in confetti_particles:
+                particle["y"] += particle["speed"]
+                if particle["y"] > HEIGHT:
+                    particle["y"] = random.randint(-HEIGHT, 0)
+                    particle["x"] = random.randint(0, WIDTH)
+                pygame.draw.circle(self.screen, confetti_color, (particle["x"], int(particle["y"])), particle["size"])
+
+            pygame.display.flip()
+            pygame.time.delay(30)        
+            # After confetti end, close game
+        pygame.quit()
+        sys.exit()    
             
     def flip_display(self, selected_unit=None, hovered_cell=None):
         #self.screen.fill(BLACK)
@@ -637,23 +693,12 @@ class Display:
                 pygame.draw.rect(self.screen, (200, 160, 255), rect)
 
 
-
-        # Draw the menu in the lower-left corner
-        self.draw_menu(selected_unit)
-
-        pygame.display.flip()
+        # Draw objects (rocks, fire, water, etc.)
+        for obj in self.objects:
+            obj.draw(self.screen)
         
-    def flip_display_basic(self,selected_unit):
-        #self.screen.fill(BLACK)
-        self.screen.blit(self.BoardBackground, (0,0)) # Board Background
-
-        #for x in range(0, WIDTH, CELL_SIZE):
-        #    for y in range(0, HEIGHT, CELL_SIZE):
-        #        rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
-        #        pygame.draw.rect(self.screen, WHITE, rect, 1)
-
-        for unit in self.game.player1_units + self.game.player2_units:
-            unit.draw(self.screen)
+        # Draw message (of there's one)
+        self.draw_message()
 
         # Draw the menu in the lower-left corner
         self.draw_menu(selected_unit)

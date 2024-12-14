@@ -21,11 +21,11 @@ class Display:
         self.background_image = pygame.image.load("background.jpg").convert()
         self.background_image = pygame.transform.scale(self.background_image, (WIDTH, HEIGHT))
         
-        self.objects = []  # Lista de objetos del juego (puedes llenarla más adelante)
-        # Asegúrate de inicializar la fuente aquí
-        self.font = pygame.font.Font(None, 74)  # Usando una fuente predeterminada con tamaño 74
-        self.small_font = pygame.font.Font(None, 36)  # Puedes agregar una fuente pequeña si lo necesitas
-        self.message = ""  # Asegúrate de inicializar el atributo 'message'
+        self.objects = []  # List of objects
+        # Initialize font
+        self.font = pygame.font.Font(None, 74)  
+        self.small_font = pygame.font.Font(None, 36)  
+        self.message = ""  # Attribute 'message'
         self.message_timer = 0 
         
         # Load background image for the board
@@ -173,8 +173,7 @@ class Display:
                 "Guerrier: Puissant en attaque rapprochée.",
                 "Archer: Attaque à distance avec précision.",
                 "Magicien: Utilise des sorts puissants.",
-                "Assassin: Peut achever des ennemis résistants en une seule fois."
-                "Infirmier: Peut soigner ses compagnons blessés au combat.add ",
+                "Assassin: Agile et rapide en déplacement.",
             ]
 
             for i, line in enumerate(powers_text_lines):

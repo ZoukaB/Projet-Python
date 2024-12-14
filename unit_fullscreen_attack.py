@@ -1,6 +1,7 @@
 from math import ceil
 import pygame
 import random
+import math
 
 # Initialize Pygame to fetch display info
 pygame.init()
@@ -104,13 +105,98 @@ class Guerrier(Unit):
     def __init__(self, x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team):
         super().__init__(x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team, range_=1)  # Guerrier range 1
 
-class Archer(Unit):
+class Archer(Unit):  # Archer heredity from Unit
     def __init__(self, x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team):
-        super().__init__(x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team, range_=3)  # Archer range 3
+        super().__init__(x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team, range_=4)
+        # Upload arrow image
+        self.arrow_image = pygame.image.load("arrow.png").convert_alpha()
+        self.arrow_image = pygame.transform.scale(self.arrow_image, (CELL_SIZE // 2, CELL_SIZE // 2))  # Scale image
+
+
+    def attack_with_animation(self, target, game, screen):
+        """
+        Simulates attack of the archer with animated arrow.
+        """
+        # Initial and final coordinates of the arrow
+        start_x = self.x * CELL_SIZE + CELL_SIZE // 2
+        start_y = self.y * CELL_SIZE + CELL_SIZE // 2
+        end_x = target.x * CELL_SIZE + CELL_SIZE // 2
+        end_y = target.y * CELL_SIZE + CELL_SIZE // 2
+
+        # Animation duration
+        steps = 30
+        for step in range(steps):
+            t = step / steps
+            current_x = int(start_x + t * (end_x - start_x))
+            current_y = int(start_y + t * (end_y - start_y))
+
+            # Draw movement of the arrow
+            game.display.flip_display()  # Redraw board
+            arrow_rotated = pygame.transform.rotate(self.arrow_image, self.calculate_angle(start_x, start_y, end_x, end_y))
+            arrow_rect = arrow_rotated.get_rect(center=(current_x, current_y))
+            screen.blit(arrow_rotated, arrow_rect)
+
+            pygame.display.flip()
+            pygame.time.delay(30)
+
+        # Attack and calculate damage
+        damage = max(1, self.attaque - target.defense)
+        target.vie -= damage
+        return damage
+    
+    def calculate_angle(self, start_x, start_y, end_x, end_y):
+        """
+        Calculate angle rotation of the arrow in degrees.
+        """
+        dx = end_x - start_x
+        dy = end_y - start_y
+        return -math.degrees(math.atan2(dy, dx))  
+
 
 class Magicien(Unit):
     def __init__(self, x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team):
-        super().__init__(x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team, range_=2)  # Magicien range 2
+        super().__init__(x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team, range_=6)  
+        # Upload arrow image
+        self.fireball_image = pygame.image.load("fireball.png").convert_alpha()
+        self.fireball_image = pygame.transform.scale(self.arrow_image, (CELL_SIZE // 2, CELL_SIZE // 2))  # Scale image
+    def attack_with_animation(self, target, game, screen):
+        """
+        Simulates attack of the archer with animated fireball.
+        """
+        # Initial and final coordinates of the fireball
+        start_x = self.x * CELL_SIZE + CELL_SIZE // 2
+        start_y = self.y * CELL_SIZE + CELL_SIZE // 2
+        end_x = target.x * CELL_SIZE + CELL_SIZE // 2
+        end_y = target.y * CELL_SIZE + CELL_SIZE // 2
+
+        # Animation duration
+        steps = 30
+        for step in range(steps):
+            t = step / steps
+            current_x = int(start_x + t * (end_x - start_x))
+            current_y = int(start_y + t * (end_y - start_y))
+
+            # Draw movement of the fireball
+            game.display.flip_display()  # Redraw board
+            arrow_rotated = pygame.transform.rotate(self.arrow_image, self.calculate_angle(start_x, start_y, end_x, end_y))
+            arrow_rect = arrow_rotated.get_rect(center=(current_x, current_y))
+            screen.blit(arrow_rotated, arrow_rect)
+
+            pygame.display.flip()
+            pygame.time.delay(30)
+
+        # Attack and calculate damage
+        damage = max(1, self.attaque - target.defense)
+        target.vie -= damage
+        return damage
+    
+    def calculate_angle(self, start_x, start_y, end_x, end_y):
+        """
+        Calculate angle rotation of the arrow in degrees.
+        """
+        dx = end_x - start_x
+        dy = end_y - start_y
+        return -math.degrees(math.atan2(dy, dx))      
 
 class Assassin(Unit):
     def __init__(self, x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team):
