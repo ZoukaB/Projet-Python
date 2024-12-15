@@ -301,7 +301,7 @@ class Game:
                             # Special skill for different units
                             if isinstance(selected_unit, Magicien):
                                 # Healing Magicien
-                                if "Poción de Curación" in selected_unit.abilities:
+                                if "Healing Potion" in selected_unit.abilities:
                                     heal_amount = selected_unit.heal()
                                     self.display.show_message(f"{selected_unit.__class__.__name__} healed {heal_amount} life points.")
                                     moved_units.append(selected_unit)  # Add to the list of moved units
@@ -313,7 +313,7 @@ class Game:
 
                             elif isinstance(selected_unit, Guerrier):
                                 # Special skill for Guerrier
-                                if "Golpe Poderoso" in selected_unit.abilities:
+                                if "Powerful Blow" in selected_unit.abilities:
                                     # Activate selection mode for Powerful Blow
                                     self.display.show_message("Who do you want to throw the Powerful Blow at? Use A/D to select target and  bar space to execute.")
                                     
@@ -371,7 +371,7 @@ class Game:
                                         self.display.show_message("No enemies available for Powerful Blow.")
                             elif isinstance(selected_unit, Archer):
                                 # Special skill for the Archer: Flecha Curatoria / Healing arrow
-                                if "Flecha Curatoria" in selected_unit.abilities:
+                                if "Healing Arrow" in selected_unit.abilities:
                                     self.display.show_message("Who do you want to heal with the Healing Arrow? Use A/D to select target and space bar to execute")
                                     
                                     # Filter allies between the range of the archer
@@ -423,7 +423,7 @@ class Game:
                                         self.display.show_message("No available allies to heal.")
                             for unit in self.player1_units:
                                 if isinstance(unit, Assassin):
-                                    if "Colmillo Crítico" in unit.abilities:
+                                    if "Critical Fang" in unit.abilities:
                                         self.display.show_message("Who do you want to attack with Critical Fang? Use A/D to select target and space bar to execute.")
                                         
                                         enemies_in_range = [enemy for enemy in self.player2_units if
@@ -630,7 +630,7 @@ class Game:
                             # Special skill for the units
                             if isinstance(selected_unit, Magicien):
                                 # Healing Magicien
-                                if "Poción de Curación" in selected_unit.abilities:
+                                if "Healing Potion" in selected_unit.abilities:
                                     heal_amount = selected_unit.heal()
                                     self.display.show_message(f"{selected_unit.__class__.__name__} healed {heal_amount} life points.")
                                     moved_units.append(selected_unit)  # Add to the list of moved units
@@ -642,7 +642,7 @@ class Game:
 
                             elif isinstance(selected_unit, Guerrier):
                                 # Special skill of Guerrier
-                                if "Golpe Poderoso" in selected_unit.abilities:
+                                if "Powerful Blow" in selected_unit.abilities:
                                     # Activate selection mode for the Powerful Blow
                                     self.display.show_message("Who do you want to throw the Powerful Blow at? Use A/D to select target and  bar space to execute.")
                                     
@@ -699,8 +699,8 @@ class Game:
                                     else:
                                         self.display.show_message("No available enemies for Powerful Blow.")
                             elif isinstance(selected_unit, Archer):
-                                # Special skill for Archer: Flecha Curatoria / Healin arrow
-                                if "Flecha Curatoria" in selected_unit.abilities:
+                                # Special skill for Archer: Flecha Curatoria / Healing arrow
+                                if "Healing Arrow" in selected_unit.abilities:
                                     self.display.show_message("Who do you want to heal with the Healing Arrow? Use A/D to select target and space bar to execute.")
                                     
                                     # Filter allies between the range of the archer
@@ -752,7 +752,7 @@ class Game:
                                         self.display.show_message("No available allies to heal.")
                             for unit in self.player2_units:
                                 if isinstance(unit, Assassin):
-                                    if "Colmillo Crítico" in unit.abilities:
+                                    if "Critical Fang" in unit.abilities:
                                         self.display.show_message("Who do you want to attack with Critical Fang? Use A/D to select target and space bar to execute.")
                                         
                                         enemies_in_range = [enemy for enemy in self.player1_units if

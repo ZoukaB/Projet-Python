@@ -3,15 +3,18 @@ import pygame
 import random
 from unit_fullscreen_attack import *
 
-CHARACTER_OPTIONS = [
+CHARACTER_OPTIONS_p1 = [
     {"name": "Guerrier", "stats": (0, 10, 4, 4, 4, 4, 5, 4, 10, 10)},
     {"name": "Archer", "stats": (0, 0, 5, 3, 5, 3, 4, 3, 4, 4)},
     {"name": "Magicien", "stats": (0, 0, 3, 6, 2, 5, 3, 2, 2, 2)},
     {"name": "Assassin", "stats": (0, 0, 6, 2, 4, 4, 4, 4, 10, 10)},
+]
+
+CHARACTER_OPTIONS_p2 = [
     {"name": "Guerrier2", "stats": (0, 10, 4, 4, 4, 4, 5, 4, 10, 10)},
     {"name": "Archer2", "stats": (0, 0, 5, 3, 5, 3, 4, 3, 4, 4)},
     {"name": "Magicien2", "stats": (0, 0, 3, 6, 2, 5, 3, 2, 2, 2)},
-    {"name": "Assassin2", "stats": (0, 0, 6, 2, 4, 4, 4, 4, 10, 10)}
+    {"name": "Assassin2", "stats": (0, 0, 6, 2, 4, 4, 4, 4, 10, 10)},
 ]
 
 TEXT_COLOR = (255, 255, 255)  # color white for the text
@@ -120,10 +123,9 @@ class Display:
         # List of rules to display
         rules_text_lines = [
             "Règles du Jeu:",
-            "1. Chaque joueur choisit 2 personnages.",
-            "2. Les joueurs déplacent leurs unités à tour de rôle.",
-            "3. L'objectif est de vaincre toutes les unités adverses.",
-            "4. Chaque unité a des capacités uniques.",
+            "1. Chaque joueur choisit 2 personnages dans l'écran de sélection. Chaque personnage possède des statistiques et capacités spéciales propre.",
+            "2. Les joueurs déplacent leurs unités à tour de rôle à l'aide des flèches et de la commande espace. S'ils sont dans la range équivalente, ils peuvent ensuite lancer une attaque ou charger un ennemi ",
+            "3. L'objectif est de vaincre les deux unités adverses.",
         ]
 
         # Calculate the total height of the text block
@@ -175,10 +177,10 @@ class Display:
             # Display character powers text
             powers_text_lines = [
                 "Pouvoirs des Personnages:",
-                "Guerrier: Puissant en attaque rapprochée.",
-                "Archer: Attaque à distance avec précision.",
-                "Magicien: Utilise des sorts puissants.",
-                "Assassin: Agile et rapide en déplacement.",
+                "Guerrier: Puissant en attaque rapprochée. Il a des potions pour décupler sa vitalité et peut sacrifier de l'énergie pour plus de létalité",
+                "Archer: Spécialiste des attaques à distance. Il a concocté des flèches aux pouvoirs régénérateurs pour ses alliées et d'autres bien plus mortelles pour ses ennemis",
+                "Magicien: Adepte de sortilèges mortifère. Dans son arsenal magique, il possède une boule de feu et une vapeur empoisonnée",
+                "Assassin: Roublard agile et rusé. Il préférera peut être s'enfuir d'un combat désavantageux, mais s'il décide vraiment de combattre, une seule petite blessure lui suffira pour tuer son ennemi",
             ]
 
             for i, line in enumerate(powers_text_lines):
@@ -205,32 +207,32 @@ class Display:
         
     def character_choice_screen(self):
         # Font for button and text
-        font = pygame.font.Font(None, 36)
-        small_font = pygame.font.Font(None, 24)
+        font = pygame.font.Font(None, 48)
+        small_font = pygame.font.Font(None, 32)
         
         # Button to go back to the menu
-        back_button = pygame.Rect(WIDTH - 150, HEIGHT - 60, 120, 40)
+        back_button = pygame.Rect(WIDTH - 170, HEIGHT - 70, 140, 50)
 
         # Button for starting the game
-        start_button = pygame.Rect(WIDTH // 2 - 62, HEIGHT - 70, 125, 50)
+        start_button = pygame.Rect(WIDTH // 2 - 75, HEIGHT - 80, 150, 60)
 
         # Resize character images to fit larger squares
+        IMAGE_SIZE = 120  # New image size (increased from 100)
         for key in self.character_images:
-            self.character_images[key] = pygame.transform.scale(self.character_images[key], (100, 100))
+            self.character_images[key] = pygame.transform.scale(self.character_images[key], (IMAGE_SIZE, IMAGE_SIZE))
 
-        # Positions for Player 1 and Player 2 character choices (two columns each)
+        # Positions for Player 1 and Player 2 character choices (two vertical columns)
+        player1_x = WIDTH // 4 - 80  # Center Player 1's columns on the left quarter of the screen
+        player2_x = 3 * WIDTH // 4 - 40  # Center Player 2's columns on the right quarter of the screen
+        
         player1_choice_positions = [
-            (100, 150), (250, 150),
-            (100, 300), (250, 300),
-            (100, 450), (250, 450),
-            (100, 600), (250, 600)
-            
+            (player1_x, 200), (player1_x + 200, 200),
+            (player1_x, 400), (player1_x + 200, 400),
         ]
+
         player2_choice_positions = [
-            (WIDTH - 300, 150), (WIDTH - 150, 150),
-            (WIDTH - 300, 300), (WIDTH - 150, 300),
-            (WIDTH - 300, 450), (WIDTH - 150, 450),
-            (WIDTH - 300, 600), (WIDTH - 150, 600)
+            (player2_x, 200), (player2_x + 200, 200),
+            (player2_x, 400), (player2_x + 200, 400),
         ]
 
         # Selections for Player 1 and Player 2
@@ -239,12 +241,12 @@ class Display:
 
         # Initialize starting positions for each player's units
         player1_positions = [(i, 0) for i in range(2)]
+        #player2_positions = [(4 - i, 4 - 1) for i in range(1, 3)]
         player2_positions = [(GRID_COLUMNS - i, GRID_ROWS - 1) for i in range(1, 3)]
 
         # Main loop for the home screen
         running = True
         while running:
-            #self.screen.fill(BLACK)
             self.draw_semi_transparent_background()  # Draw the semi-transparent background
 
             # Draw instructions
@@ -253,46 +255,50 @@ class Display:
 
             # Draw Player 1's character choices
             player1_text = font.render("Player 1", True, BLUE)
-            self.screen.blit(player1_text, (150 - player1_text.get_width() // 2, 50))
-            for i, option in enumerate(CHARACTER_OPTIONS):
+            self.screen.blit(player1_text, (player1_x + 50, 50))
+            for i, option in enumerate(CHARACTER_OPTIONS_p1):
                 x, y = player1_choice_positions[i]
-                pygame.draw.rect(self.screen, WHITE, (x - 50, y - 50, 100, 100), 2)
-                self.screen.blit(self.character_images[option["name"]], (x - 50, y - 50))
+                pygame.draw.rect(self.screen, WHITE, (x - 60, y - 60, IMAGE_SIZE, IMAGE_SIZE), 2)
+                self.screen.blit(self.character_images[option["name"]], (x - 60, y - 60))
 
                 # Draw character name below the image
                 name_text = small_font.render(option["name"], True, WHITE)
-                self.screen.blit(name_text, (x - name_text.get_width() // 2, y + 60))
+                self.screen.blit(name_text, (x - name_text.get_width() // 2, y + 70))
 
                 # Highlight selection
                 if option["name"] in player1_selection:
-                    pygame.draw.rect(self.screen, BLUE, (x - 50, y - 50, 100, 100), 4)
+                    pygame.draw.rect(self.screen, BLUE, (x - 60, y - 60, IMAGE_SIZE, IMAGE_SIZE), 4)
 
             # Draw Player 2's character choices
             player2_text = font.render("Player 2", True, RED)
-            self.screen.blit(player2_text, (WIDTH - 200 - player2_text.get_width() // 2, 50))
-            for i, option in enumerate(CHARACTER_OPTIONS):
+            self.screen.blit(player2_text, (player2_x + 50, 50))
+            for i, option in enumerate(CHARACTER_OPTIONS_p2):
                 x, y = player2_choice_positions[i]
-                pygame.draw.rect(self.screen, WHITE, (x - 50, y - 50, 100, 100), 2)
-                self.screen.blit(self.character_images[option["name"]], (x - 50, y - 50))
+                pygame.draw.rect(self.screen, WHITE, (x - 60, y - 60, IMAGE_SIZE, IMAGE_SIZE), 2)
+                self.screen.blit(self.character_images[option["name"]], (x - 60, y - 60))
 
                 # Draw character name below the image
                 name_text = small_font.render(option["name"], True, WHITE)
-                self.screen.blit(name_text, (x - name_text.get_width() // 2, y + 60))
+                self.screen.blit(name_text, (x - name_text.get_width() // 2, y + 70))
 
                 # Highlight selection
                 if option["name"] in player2_selection:
-                    pygame.draw.rect(self.screen, RED, (x - 50, y - 50, 100, 100), 4)
+                    pygame.draw.rect(self.screen, RED, (x - 60, y - 60, IMAGE_SIZE, IMAGE_SIZE), 4)
 
             # Draw the Start button
             pygame.draw.rect(self.screen, WHITE, start_button)
             start_text = font.render("Start", True, BLACK)
             self.screen.blit(start_text, (start_button.x + (start_button.width - start_text.get_width()) // 2,
                                           start_button.y + (start_button.height - start_text.get_height()) // 2))
+
             # Draw back button
             pygame.draw.rect(self.screen, WHITE, back_button)
             back_text = font.render("Retour", True, BLACK)
             self.screen.blit(back_text, (back_button.x + (back_button.width - back_text.get_width()) // 2,
                                          back_button.y + (back_button.height - back_text.get_height()) // 2))
+
+            pygame.display.flip()
+
 
             # Event handling
             for event in pygame.event.get():
@@ -304,7 +310,7 @@ class Display:
                     mouse_pos = pygame.mouse.get_pos()
     
                     # Check if a Player 1 character was clicked
-                    for i, option in enumerate(CHARACTER_OPTIONS):
+                    for i, option in enumerate(CHARACTER_OPTIONS_p1):
                         x, y = player1_choice_positions[i]
                         rect = pygame.Rect(x - 50, y - 50, 100, 100)
 
@@ -323,18 +329,9 @@ class Display:
                                     self.game.player1_units.append(Magicien(px, py, *option["stats"][2:], 'player1'))
                                 if option["name"] == 'Assassin':
                                     self.game.player1_units.append(Assassin(px, py, *option["stats"][2:], 'player1'))
-                                if option["name"] == 'Guerrier2':
-                                    self.game.player1_units.append(Guerrier(px, py, *option["stats"][2:], 'player1'))
-                                if option["name"] == 'Archer2':
-                                    self.game.player1_units.append(Archer(px, py, *option["stats"][2:], 'player1'))
-                                if option["name"] == 'Magicien2':
-                                    self.game.player1_units.append(Magicien(px, py, *option["stats"][2:], 'player1'))
-                                if option["name"] == 'Assassin2':
-                                    self.game.player1_units.append(Assassin(px, py, *option["stats"][2:], 'player1'))
-
 
                     # Check if a Player 2 character was clicked
-                    for i, option in enumerate(CHARACTER_OPTIONS):
+                    for i, option in enumerate(CHARACTER_OPTIONS_p2):
                         x, y = player2_choice_positions[i]
                         rect = pygame.Rect(x - 50, y - 50, 100, 100)
 
@@ -345,22 +342,12 @@ class Display:
                             elif option["name"] not in player2_selection and len(player2_selection) < 2:
                                 player2_selection.append(option["name"])
                                 px, py = player2_positions[len(player2_selection) - 1]
-                                if option["name"] == 'Guerrier':
-                                    self.game.player2_units.append(Guerrier(px, py, *option["stats"][2:], 'player2'))
-                                if option["name"] == 'Archer':
-                                    self.game.player2_units.append(Archer(px, py, *option["stats"][2:], 'player2'))
-                                if option["name"] == 'Magicien':
-                                    self.game.player2_units.append(Magicien(px, py, *option["stats"][2:], 'player2'))
-                                if option["name"] == 'Assassin':
-                                    self.game.player2_units.append(Assassin(px, py, *option["stats"][2:], 'player2'))
                                 if option["name"] == 'Guerrier2':
                                     self.game.player2_units.append(Guerrier(px, py, *option["stats"][2:], 'player2'))
                                 if option["name"] == 'Archer2':
                                     self.game.player2_units.append(Archer(px, py, *option["stats"][2:], 'player2'))
                                 if option["name"] == 'Magicien2':
                                     self.game.player2_units.append(Magicien(px, py, *option["stats"][2:], 'player2'))
-                                if option["name"] == 'Assassin2':
-                                    self.game.player2_units.append(Assassin(px, py, *option["stats"][2:], 'player2'))
                                     
                     if back_button.collidepoint(mouse_pos):  
                         self.initialize_main_menu()
@@ -429,8 +416,7 @@ class Display:
             second_column_x = menu_x + column_width
             second_column_stats = [
                 f"Attaque: {selected_unit.attaque}",
-                f"Défense: {selected_unit.defense}",
-                f"Tir: {selected_unit.tir}",
+                f"Vie: {selected_unit.vie}",
             ]
 
             for i, line in enumerate(second_column_stats):

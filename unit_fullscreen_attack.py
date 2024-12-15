@@ -119,7 +119,7 @@ class Guerrier(Unit):
         self.image_player2 = pygame.image.load("PersosBoard/warrior2.png").convert_alpha()
         self.image_player2 = pygame.transform.scale(self.image_player2, (CELL_SIZE, CELL_SIZE))
 
-        self.abilities = ["Golpe Poderoso", "Escudo Defensivo"]
+        self.abilities = ["Powerful Blow", "Escudo Defensivo"]
     
     def attack_with_animation(self, target, game, screen):
         """
@@ -193,7 +193,7 @@ class Archer(Unit):
         self.image_player2 = pygame.image.load("PersosBoard/archer2.png").convert_alpha()
         self.image_player2 = pygame.transform.scale(self.image_player2, (CELL_SIZE, CELL_SIZE))
         
-        self.abilities = ["Flecha Curatoria"]  # Archer's ability
+        self.abilities = ["Healing Arrow"]  # Archer's ability
 
     def attack_with_animation(self, target, game, screen):
         """
@@ -247,7 +247,7 @@ class Magicien(Unit):
     def __init__(self, x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team):
         super().__init__(x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team, range_=6)  # Magicien has a range of 2
         
-        self.abilities = ["Poción de Curación", "Ataque de Área"]
+        self.abilities = ["Healing Potion", "Ataque de Área"]
         # Image of the fireball
         self.arrow_image = pygame.image.load("fireball.png").convert_alpha()
         self.arrow_image = pygame.transform.scale(self.arrow_image, (CELL_SIZE // 2, CELL_SIZE // 2))  # Scale image
@@ -317,7 +317,7 @@ class Assassin(Unit):
         self.image_player2 = pygame.image.load("PersosBoard/assasin2.png").convert_alpha()
         self.image_player2 = pygame.transform.scale(self.image_player2, (CELL_SIZE, CELL_SIZE))
         
-        self.abilities = ["Movimiento Adicional", "Colmillo Crítico"]
+        self.abilities = ["Movimiento Adicional", "Critical Fang"]
         
         # Skill status
         self.colmillo_critico_target = None  # Selected target to attack
