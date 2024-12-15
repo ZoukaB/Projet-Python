@@ -82,6 +82,7 @@ class Game:
         """Resets the game state for a fresh start."""
         self.player1_units = []
         self.player2_units = [] 
+        self.reset_jeu = False  # Reset the flag for a clean restart
 
     def handle_player_turn(self, selected_unit):
         hovered_cell = (selected_unit.x, selected_unit.y)
@@ -128,7 +129,7 @@ class Game:
                             if 0 <= new_x < GRID_COLUMNS and 0 <= new_y < GRID_ROWS:
                                 proposed_x, proposed_y = new_x, new_y
                                 hovered_cell = (proposed_x, proposed_y)
-
+                    
             # Update the display
             self.display.flip_display(selected_unit, hovered_cell)
             pygame.display.flip()
@@ -148,6 +149,8 @@ class Game:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.pause_menu()
+                        if self.reset_jeu:
+                            return  # Exit if the reset flag is set after the pause menu
 
                     if event.key == pygame.K_TAB:
                         if not capacity_used:
@@ -195,6 +198,9 @@ class Game:
                             selected_unit.desactive_coup_fatal()
 
                         return  # Exit the function after the attack
+                    
+                if self.reset_jeu:
+                            return  # Exit if the reset flag is set after the pause menu
 
             # Update the display
             self.display.flip_display_basic(selected_unit)
@@ -297,14 +303,17 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
     pygame.display.set_caption("Mon jeu de stratégie")
-    game = Game(screen)
-    display = Display(screen,game)
+    
     while True:
+        # Create a fresh game instance and display instance each time we restart
+        game = Game(screen)
+        display = Display(screen, game)
+        
         # Display the character selection screen
         display.initialize_main_menu()
         display.character_choice_screen()
 
-        # After character selection, start the game loop
+        # Start the game loop
         running = True
         while running:
             # Handle player 1's turn by moving all units one by one
@@ -314,7 +323,7 @@ def main():
                 game.handle_player1_attack(unit)
                 unit.is_selected = False  # Deselect the unit after moving
 
-            # Handle player 1's turn by moving all units one by one
+            # Handle player 2's turn by moving all units one by one
             for unit in game.player2_units:
                 unit.is_selected = True
                 game.handle_player_turn(unit)
@@ -323,10 +332,11 @@ def main():
 
             # Check if the game has been reset (e.g., when returning to the main menu)
             if game.reset_jeu:
-                running = False
-                pygame.display.flip()
-                # Exit the game loop to restart the main loop
+                running = False  # Exit the game loop to restart the main loop
 
+        # Optional: Clear the screen for a fresh start
+        screen.fill((0, 0, 0))
+        pygame.display.flip()
 
 if __name__ == "__main__":
     main()
