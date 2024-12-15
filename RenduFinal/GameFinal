@@ -1,9 +1,9 @@
 import sys
 import pygame
 import random
-from unit_fullscreen import *
-from Display import *
-from Personnages import *
+from UnitFinal import *
+from DisplayFinal import *
+from PersonnagesFinal import *
 
 class Game:
     def __init__(self, screen):
@@ -78,6 +78,13 @@ class Game:
 
             pygame.display.flip()
 
+    def check_victory(self):
+        """Verify if there's a winner."""
+        if not self.player1_units:
+            self.display.show_victory_message("Player 2 wins!", confetti_color=(255, 0, 0))  # Red for player 2
+        elif not self.player2_units:
+            self.display.show_victory_message("Player 1 wins!", confetti_color=(0, 0, 255))  # Blue for player 1
+
     def reset_game(self):
         """Resets the game state for a fresh start."""
         self.player1_units = []
@@ -136,13 +143,21 @@ class Game:
 
     def handle_player1_attack(self, selected_unit):
         capacity_used = False  # Flag to track if capacity has been used during this turn
-        
+
         if self.reset_jeu:
             return  # Exit immediately if reset_jeu is True
 
         if selected_unit:
             # Show action options when unit is selected
-            self.display.affiche_message_centre("Que voulez vous faire ? Attaquer (Return), Utiliser une capacitée (Tab) puis attaquer")
+            self.display.affiche_message_centre("Que voulez-vous faire ? Attaquer (A), Utiliser une capacité (Tab) puis attaquer")
+
+        # Find enemies within attack range
+        enemies_in_range = [
+            enemy for enemy in self.player2_units
+            if max(abs(enemy.x - selected_unit.x), abs(enemy.y - selected_unit.y)) <= selected_unit.attack_range
+        ]
+
+        selected_enemy_index = 0  # Index to track which enemy is currently selected
 
         while True:
             for event in pygame.event.get():
@@ -160,76 +175,61 @@ class Game:
                         if not capacity_used:
                             self.display.capacity_choice(selected_unit)
                             self.display.draw_menu(selected_unit)
-                            if enemy.vie <= 0:
-                                self.player2_units.remove(enemy)
+                            if enemies_in_range and enemies_in_range[selected_enemy_index].vie <= 0:
+                                self.player2_units.remove(enemies_in_range[selected_enemy_index])
                             if not self.player2_units:
                                 self.display.show_victory_message("Bravo ! Vous avez gagné")
                             capacity_used = True  # Mark capacity as used
                         else:
-                            self.display.affiche_message_centre("Capacité déjà utilisé pendant ce tour")
+                            self.display.affiche_message_centre("Capacité déjà utilisée pendant ce tour")
 
+                    elif event.key == pygame.K_a:
+                        if enemies_in_range:
+                            # Cycle to the next enemy
+                            selected_enemy_index = (selected_enemy_index + 1) % len(enemies_in_range)
 
+                    elif event.key == pygame.K_SPACE:
+                        if enemies_in_range:
+                            enemy = enemies_in_range[selected_enemy_index]
+                            damage = selected_unit.attack_with_animation(enemy, self, self.screen)
+                            self.display.affiche_message_haut(f"{selected_unit.__class__.__name__} inflicted {damage} damage to {enemy.__class__.__name__}!")
 
-                    if event.key == pygame.K_RETURN:
-                        # Attack logic when Enter is pressed
-                        attacked = False
-                        for enemy in self.player2_units:
-                            if isinstance(selected_unit, Archer) or isinstance(selected_unit, Magicien):
-                                if (abs(selected_unit.x - enemy.x) <= selected_unit.attack_range and abs(selected_unit.y - enemy.y) == 0) or \
-                                   (abs(selected_unit.y - enemy.y) <= selected_unit.attack_range and abs(selected_unit.x - enemy.x) == 0):
-                                    selected_unit.attack(enemy)
-                                    attacked = True
-                            else:
-                                if abs(selected_unit.x - enemy.x) <= selected_unit.attack_range and abs(selected_unit.y - enemy.y) <= selected_unit.attack_range:
-                                    selected_unit.attack(enemy)
-                                    attacked = True
-
-                            # Remove the enemy if their health is 0 or less
                             if enemy.vie <= 0:
+                                self.display.affiche_message_haut(f"{enemy.__class__.__name__} was defeated!")
                                 self.player2_units.remove(enemy)
-                            if not self.player2_units:
-                                self.display.show_victory_message("Bravo ! Vous avez gagné")
+                                self.check_victory()
+                            return
 
-                        if not attacked:
-                            print("No enemy to attack!")
-
-                        # Mark the unit's turn as complete
-                        if isinstance(selected_unit, Guerrier) and selected_unit.temeraire_actif:
-                            selected_unit.desactive_temeraire()
-
-                        if isinstance(selected_unit, Archer) and selected_unit.headshot_actif:
-                            selected_unit.annul_headshot()
-
-                        if isinstance(selected_unit, Assassin) and selected_unit.coup_fatal_actif:
-                            selected_unit.desactive_coup_fatal()
-
-                        return  # Exit the function after the attack
-                    
-                if self.reset_jeu:
-                            return  # Exit if the reset flag is set after the pause menu
-
-            # Update the display
+            # Update the display and highlight the selected enemy
             self.display.flip_display_basic(selected_unit)
 
-            # Outline possible enemies to attack in red
-            for enemy in self.player2_units:
-                if isinstance(selected_unit, Archer) or isinstance(selected_unit, Magicien):
-                    if (abs(selected_unit.x - enemy.x) <= selected_unit.attack_range and abs(selected_unit.y - enemy.y) == 0) or \
-                       (abs(selected_unit.y - enemy.y) <= selected_unit.attack_range and abs(selected_unit.x - enemy.x) == 0):
-                        enemy_rect = pygame.Rect(enemy.x * CELL_SIZE, enemy.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-                        pygame.draw.rect(self.screen, (255, 0, 0), enemy_rect, 3)
+            # Outline only the currently selected enemy in red
+            for i, enemy in enumerate(enemies_in_range):
+                enemy_rect = pygame.Rect(enemy.x * CELL_SIZE, enemy.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                if i == selected_enemy_index:
+                    pygame.draw.rect(self.screen, (255, 0, 0), enemy_rect, 5)  # Thicker border for the selected enemy
                 else:
-                    if abs(selected_unit.x - enemy.x) <= selected_unit.attack_range and abs(selected_unit.y - enemy.y) <= selected_unit.attack_range:
-                        enemy_rect = pygame.Rect(enemy.x * CELL_SIZE, enemy.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-                        pygame.draw.rect(self.screen, (255, 0, 0), enemy_rect, 3)
+                    pygame.draw.rect(self.screen, (255, 0, 0), enemy_rect, 1)  # Thinner border for others
 
             pygame.display.flip()
 
     def handle_player2_attack(self, selected_unit):
         capacity_used = False  # Flag to track if capacity has been used during this turn
-        
+
         if self.reset_jeu:
             return  # Exit immediately if reset_jeu is True
+
+        if selected_unit:
+            # Show action options when unit is selected
+            self.display.affiche_message_centre("Que voulez-vous faire ? Attaquer (A), Utiliser une capacité (Tab) puis attaquer")
+
+        # Find enemies within attack range
+        enemies_in_range = [
+            enemy for enemy in self.player1_units
+            if max(abs(enemy.x - selected_unit.x), abs(enemy.y - selected_unit.y)) <= selected_unit.attack_range
+        ]
+
+        selected_enemy_index = 0  # Index to track which enemy is currently selected
 
         while True:
             for event in pygame.event.get():
@@ -240,68 +240,48 @@ class Game:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.pause_menu()
+                        if self.reset_jeu:
+                            return  # Exit if the reset flag is set after the pause menu
 
                     if event.key == pygame.K_TAB:
                         if not capacity_used:
                             self.display.capacity_choice(selected_unit)
                             self.display.draw_menu(selected_unit)
-                            if enemy.vie <= 0:
-                                self.player1_units.remove(enemy)
+                            if enemies_in_range and enemies_in_range[selected_enemy_index].vie <= 0:
+                                self.player1_units.remove(enemies_in_range[selected_enemy_index])
                             if not self.player1_units:
                                 self.display.show_victory_message("Bravo ! Vous avez gagné")
                             capacity_used = True  # Mark capacity as used
                         else:
-                            self.display.affiche_message_centre("Capacité déjà utilisé pendant ce tour")
+                            self.display.affiche_message_centre("Capacité déjà utilisée pendant ce tour")
 
-                    if event.key == pygame.K_RETURN:
-                        # Attack logic when Enter is pressed
-                        attacked = False
-                        for enemy in self.player1_units:
-                            if isinstance(selected_unit, Archer) or isinstance(selected_unit, Magicien):
-                                if (abs(selected_unit.x - enemy.x) <= selected_unit.attack_range and abs(selected_unit.y - enemy.y) == 0) or \
-                                   (abs(selected_unit.y - enemy.y) <= selected_unit.attack_range and abs(selected_unit.x - enemy.x) == 0):
-                                    selected_unit.attack(enemy)
-                                    attacked = True
-                            else:
-                                if abs(selected_unit.x - enemy.x) <= selected_unit.attack_range and abs(selected_unit.y - enemy.y) <= selected_unit.attack_range:
-                                    selected_unit.attack(enemy)
-                                    attacked = True
+                    elif event.key == pygame.K_a:
+                        if enemies_in_range:
+                            # Cycle to the next enemy
+                            selected_enemy_index = (selected_enemy_index + 1) % len(enemies_in_range)
 
-                            # Remove the enemy if their health is 0 or less
+                    elif event.key == pygame.K_SPACE:
+                        if enemies_in_range:
+                            enemy = enemies_in_range[selected_enemy_index]
+                            damage = selected_unit.attack_with_animation(enemy, self, self.screen)
+                            self.display.affiche_message_centre(f"{selected_unit.__class__.__name__} inflicted {damage} damage to {enemy.__class__.__name__}!")
+
                             if enemy.vie <= 0:
+                                self.display.affiche_message_centre(f"{enemy.__class__.__name__} was defeated!")
                                 self.player1_units.remove(enemy)
-                            if not self.player1_units:
-                                self.display.show_victory_message("Bravo ! Vous avez gagné")
+                                self.check_victory()
+                            return
 
-                        if not attacked:
-                            print("No enemy to attack!")
-
-                        # Mark the unit's turn as complete
-                        if isinstance(selected_unit, Guerrier) and selected_unit.temeraire_actif:
-                            selected_unit.desactive_temeraire()
-
-                        if isinstance(selected_unit, Archer) and selected_unit.headshot_actif:
-                            selected_unit.annul_headshot()
-
-                        if isinstance(selected_unit, Assassin) and selected_unit.coup_fatal_actif:
-                            selected_unit.desactive_coup_fatal()
-
-                        return  # Exit the function after the attack
-
-            # Update the display
+            # Update the display and highlight the selected enemy
             self.display.flip_display_basic(selected_unit)
 
-            # Outline possible enemies to attack in red
-            for enemy in self.player1_units:
-                if isinstance(selected_unit, Archer) or isinstance(selected_unit, Magicien):
-                    if (abs(selected_unit.x - enemy.x) <= selected_unit.attack_range and abs(selected_unit.y - enemy.y) == 0) or \
-                       (abs(selected_unit.y - enemy.y) <= selected_unit.attack_range and abs(selected_unit.x - enemy.x) == 0):
-                        enemy_rect = pygame.Rect(enemy.x * CELL_SIZE, enemy.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-                        pygame.draw.rect(self.screen, (255, 0, 0), enemy_rect, 3)
+            # Outline only the currently selected enemy in red
+            for i, enemy in enumerate(enemies_in_range):
+                enemy_rect = pygame.Rect(enemy.x * CELL_SIZE, enemy.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                if i == selected_enemy_index:
+                    pygame.draw.rect(self.screen, (255, 0, 0), enemy_rect, 5)  # Thicker border for the selected enemy
                 else:
-                    if abs(selected_unit.x - enemy.x) <= selected_unit.attack_range and abs(selected_unit.y - enemy.y) <= selected_unit.attack_range:
-                        enemy_rect = pygame.Rect(enemy.x * CELL_SIZE, enemy.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-                        pygame.draw.rect(self.screen, (255, 0, 0), enemy_rect, 3)
+                    pygame.draw.rect(self.screen, (255, 0, 0), enemy_rect, 1)  # Thinner border for others
 
             pygame.display.flip()
         

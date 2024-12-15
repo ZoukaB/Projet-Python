@@ -1,8 +1,8 @@
 import sys
 import pygame
 import random
-from unit_fullscreen import *
-from Personnages import *
+from UnitFinal import *
+from PersonnagesFinal import *
 
 CHARACTER_OPTIONS_p1 = [
     #
@@ -48,6 +48,55 @@ class Display:
             "Assassin2": pygame.image.load("Images_persos/Assasin2.png").convert_alpha(),
             "Infirmier2": pygame.image.load("Images_persos/Nurse2.png").convert_alpha(),
         }
+        
+    def show_victory_message(self, message, confetti_color=(255, 255, 255)):
+        # Code for confetti
+        confetti_particles = []  # list for confetti
+        for _ in range(150):
+            x = random.randint(0, WIDTH)
+            y = random.randint(-HEIGHT, 0)
+            speed = random.uniform(2, 5)
+            size = random.randint(2, 5)
+            confetti_particles.append({"x": x, "y": y, "speed": speed, "size": size})  
+        # Show message and animation
+        start_time = pygame.time.get_ticks()
+        duration = 10000
+        while pygame.time.get_ticks() - start_time < duration:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+            self.screen.fill(BLACK)
+            text = self.font.render(message, True, (255, 255, 255))
+            text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 3))
+            self.screen.blit(text, text_rect)
+
+            for particle in confetti_particles:
+                particle["y"] += particle["speed"]
+                if particle["y"] > HEIGHT:
+                    particle["y"] = random.randint(-HEIGHT, 0)
+                    particle["x"] = random.randint(0, WIDTH)
+                pygame.draw.circle(self.screen, confetti_color, (particle["x"], int(particle["y"])), particle["size"])
+
+            pygame.display.flip()
+            pygame.time.delay(30)        
+            # After confetti finish, end game
+        pygame.quit()
+        sys.exit()
+         
+    def show_message(self, message, duration=2000):
+        """Shows message on the screen for a given time (in milisecond)."""
+        self.message = message
+        self.message_timer = pygame.time.get_ticks() + duration  # Store time duration of the message
+        
+    def draw_message(self):
+        """Draw message on the screen if there's one."""
+        if self.message and pygame.time.get_ticks() < self.message_timer:
+            font = pygame.font.Font(None, 36)
+            text = font.render(self.message, True, (255, 255, 255))
+            text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+            self.screen.blit(text, text_rect)   
         
     def draw_semi_transparent_background(self):
         """Draws a semi-transparent background image."""

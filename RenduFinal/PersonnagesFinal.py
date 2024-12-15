@@ -1,7 +1,7 @@
 import pygame
 import random
-from unit_fullscreen import *
-from Display import *
+from UnitFinal import *
+from DisplayFinal import *
   
 class Guerrier(Unit):
     def __init__(self, x, y, mouvement,defense, attaque, vie, max_vie, energie,max_energie, team):
@@ -196,6 +196,9 @@ class Infirmier(Unit):
         self.attack_range = 1
         self.healing_range = 2
         self.capacités = ["Potion de soin", "Soin intensif"]
+        
+        self.arrow_image = pygame.image.load("seringue.png").convert_alpha()
+        self.arrow_image = pygame.transform.scale(self.arrow_image, (CELL_SIZE // 2, CELL_SIZE // 2))  # scale image
         
         self.image_player1 = pygame.image.load("PersosBoard/nurse1.png").convert_alpha()
         self.image_player1 = pygame.transform.scale(self.image_player1, (CELL_SIZE, CELL_SIZE))

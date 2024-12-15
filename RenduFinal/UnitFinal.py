@@ -1,4 +1,5 @@
 from math import ceil
+import math
 import pygame
 import random
 
@@ -63,6 +64,45 @@ class Unit:
         self.x = target_x
         self.y = target_y
         return True  # Successful move
+    
+    def attack_with_animation(self, target, game, screen):
+        """
+        Simulate the attack of the assassin.
+        """
+        # Initial and final coordinates of the attack
+        start_x = self.x * CELL_SIZE + CELL_SIZE // 2
+        start_y = self.y * CELL_SIZE + CELL_SIZE // 2
+        end_x = target.x * CELL_SIZE + CELL_SIZE // 2
+        end_y = target.y * CELL_SIZE + CELL_SIZE // 2
+
+        # Duration of animation
+        steps = 30
+        for step in range(steps):
+            t = step / steps
+            current_x = int(start_x + t * (end_x - start_x))
+            current_y = int(start_y + t * (end_y - start_y))
+
+            # Draw attack movement
+            game.display.flip_display()  # Redraw board
+            arrow_rotated = pygame.transform.rotate(self.arrow_image, self.calculate_angle(start_x, start_y, end_x, end_y))
+            arrow_rect = arrow_rotated.get_rect(center=(current_x, current_y))
+            screen.blit(arrow_rotated, arrow_rect)
+
+            pygame.display.flip()
+            pygame.time.delay(30)
+
+        # Attack and calculate damage
+        damage = max(1, self.attaque - target.defense)
+        target.vie -= damage
+        return damage
+    
+    def calculate_angle(self, start_x, start_y, end_x, end_y):
+        """
+        Calculate the angle of rotation of the attack in degrees.
+        """
+        dx = end_x - start_x
+        dy = end_y - start_y
+        return -math.degrees(math.atan2(dy, dx))
     
     def poison_actif(self):
         if self.empoisonné:
