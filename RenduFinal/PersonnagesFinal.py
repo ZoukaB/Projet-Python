@@ -173,7 +173,7 @@ class Assassin(Unit):
             self.coup_fatal_actif = True
             self.fatality = 0 
             self.attaque = self.attaque * 100
-            self.vie = 2
+            self.vie = 1
             self.energie = 0
             return "Capacité coup fatal activée"
         else:
@@ -186,6 +186,7 @@ class Assassin(Unit):
     def fuite(self,target_x,target_y):
         #Permet de se téléporter n'importe ou
         if self.vie <= 4 and self.energie >= 5: 
+            self.energie -= 5
             self.x = target_x
             self.y = target_y
             return "Capacité fuite activée "
