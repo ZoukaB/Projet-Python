@@ -45,7 +45,7 @@ class Unit:
         self.team = team  # 'player1' or 'player2'
         self.is_selected = False
         self.empoisonné = False
-        self.compteur = 0
+        self.compteur = 0 
 
     def move(self, dx, dy, all_units):
         target_x = self.x + dx
@@ -110,6 +110,10 @@ class Unit:
             self.compteur -= 1
             if self.compteur <= 0:
                 self.empoisonné = False
+    
+    def recup_energie(self):
+        if self.energie < self.max_energie:
+            self.energie += 1 
                 
     def draw(self, screen):
         """
