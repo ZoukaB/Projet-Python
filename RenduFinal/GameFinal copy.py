@@ -77,49 +77,12 @@ class Game:
         for x, y in fire_in_map:
             if not self.is_cell_occupied(x,y):
                 self.display.objects.append(Fire(x,y))
-    def move_unit(self, unit, dx, dy):
-        """
-        Mueve la unidad por el tablero en las direcciones especificadas y maneja las validaciones.
-        """
-        target_x = unit.x + dx
-        target_y = unit.y + dy
-
-        # Verificar que la posición de destino está dentro de los límites del tablero
-        if not (0 <= target_x < GRID_COLUMNS and 0 <= target_y < GRID_ROWS):
-            return False  # Posición fuera de los límites
-
-        # Verificar si la celda de destino está ocupada por otra unidad
-        for other_unit in self.player1_units + self.player2_units:
-            if other_unit.x == target_x and other_unit.y == target_y:
-                return False  # La celda está ocupada por otra unidad
-
-        # Si la celda está libre, mover la unidad
-        unit.x = target_x
-        unit.y = target_y
-        return True  # Movimiento exitoso
-
-    
-    def apply_terrain_effects(self, unit):
-        x, y = unit.x, unit.y
-        for obj in self.display.objects:
-            if obj.x == x and obj.y == y:
-                if isinstance(obj, Rock):
-                    # Las rocas no permiten el movimiento
-                    continue  # No aplica efectos, ya que está bloqueando el movimiento
-                elif isinstance(obj, Bush):
-                    unit.add_stealth(5)
-                    print(f"{unit.name} gana 5 de sigilo por el arbusto.")
-                elif isinstance(obj, Fire):
-                    unit.take_damage(10)
-                    print(f"{unit.name} recibe 10 de daño por el fuego.")
-
     
     def is_cell_occupied(self, x, y):
         """Verify if cell is occupied by an object (like a rock)."""
         for obj in self.display.objects:  # Itera on the objects on the map
             if obj.x == x and obj.y == y:
-                if isinstance(obj, Rock):  # Bloquea el movimiento si hay una roca
-                    return True  # If there is an object, return True
+                return True  # If there is an object, return True
         return False  # If there is not, return False  
 
     def pause_menu(self):
@@ -234,7 +197,6 @@ class Game:
                         if abs(final_dx) + abs(final_dy) <= selected_unit.mouvement:
                             if not self.is_cell_occupied(proposed_x, proposed_y):
                                 if selected_unit.move(final_dx, final_dy, self.player1_units + self.player2_units):
-                                    self.apply_terrain_effects(selected_unit)
                                     return
                                 else:
                                     self.display.show_message("You can't move, cell is occupied!")
@@ -254,26 +216,6 @@ class Game:
             # Update the display
             self.display.flip_display(selected_unit, hovered_cell)
             pygame.display.flip()
-            
-    def apply_terrain_effects(self, unit):
-        """Aplica los efectos del terreno a la unidad después de moverse."""
-        for obj in self.display.objects:
-            if obj.x == unit.x and obj.y == unit.y:
-                if isinstance(obj, Fire):
-                    unit.vie -= obj.damage
-                    self.display.show_message(f"{unit.__class__.__name__} recibió {obj.damage} de daño por fuego!")
-                    if unit.vie <= 0:
-                        self.display.show_message(f"{unit.__class__.__name__} ha sido derrotado por el fuego!")
-                        if unit in self.player1_units:
-                            self.player1_units.remove(unit)
-                        elif unit in self.player2_units:
-                            self.player2_units.remove(unit)
-                elif isinstance(obj, Bush):
-                    self.display.show_message(f"{unit.__class__.__name__} está oculto en un arbusto.")
-                    unit.hidden = True  # Marca la unidad como oculta si está en un arbusto
-                    return
-        unit.hidden = False  # Si no está en un arbusto, no está oculta
-
 
     def handle_player1_attack(self, selected_unit):
         capacity_used = False  # Flag to track if capacity has been used during this turn
@@ -288,7 +230,7 @@ class Game:
         # Find enemies within attack range
         enemies_in_range = [
             enemy for enemy in self.player2_units
-            if not enemy.hidden and max(abs(enemy.x - selected_unit.x), abs(enemy.y - selected_unit.y)) <= selected_unit.attack_range
+            if max(abs(enemy.x - selected_unit.x), abs(enemy.y - selected_unit.y)) <= selected_unit.attack_range
         ]
 
         selected_enemy_index = 0  # Index to track which enemy is currently selected

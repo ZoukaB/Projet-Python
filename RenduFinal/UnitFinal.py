@@ -46,6 +46,7 @@ class Unit:
         self.is_selected = False
         self.empoisonné = False
         self.compteur = 0 
+        self.hidden = False
 
     def move(self, dx, dy, all_units):
         target_x = self.x + dx
