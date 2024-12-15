@@ -5,21 +5,21 @@ from UnitFinal import *
 from PersonnagesFinal import *
 
 CHARACTER_OPTIONS_p1 = [
-    #
-    {"name": "Guerrier", "stats": (4, 5, 4, 5,10, 10,10)},
-    {"name": "Archer", "stats": (5, 4, 3, 4, 4,10,10)},
-    {"name": "Magicien", "stats": (3, 3, 2, 2, 2,10,10)},
-    {"name": "Assassin", "stats": (6, 4, 4, 10, 10,10,10)},
-    {"name": "Infirmier", "stats": (4, 5, 4, 10,10, 10,10)},
+    #Mouvement, Défense, Attaque, Vie, Max_vie, Energie, Max_energie
+    {"name": "Guerrier", "stats": (3, 3, 5, 20, 20,10,10)},
+    {"name": "Archer", "stats": (5, 3, 4, 20, 20,10,10)},
+    {"name": "Magicien", "stats": (4, 4, 3, 20, 20,10,10)},
+    {"name": "Assassin", "stats": (6, 2, 4, 20, 20,10,10)},
+    {"name": "Infirmier", "stats": (4, 3, 2, 20, 20,10,10)},
 ]
 
 CHARACTER_OPTIONS_p2 = [
     #
-    {"name": "Guerrier2", "stats": (4, 5, 4, 5,10, 10,10)},
-    {"name": "Archer2", "stats": (5, 4, 3, 4, 4,10,10)},
-    {"name": "Magicien2", "stats": (3, 3, 2, 2, 2,10,10)},
-    {"name": "Assassin2", "stats": (6, 4, 4, 10, 10,10,10)},
-    {"name": "Infirmier2", "stats": (4, 5, 4, 10,10, 10,10)},
+    {"name": "Guerrier2", "stats": (3, 3, 5, 20, 20,10,10)},
+    {"name": "Archer2", "stats": (5, 3, 4, 20, 20,10,10)},
+    {"name": "Magicien2", "stats": (4, 4, 3, 20, 20,10,10)},
+    {"name": "Assassin2", "stats": (6, 2, 4, 20, 20,10,10)},
+    {"name": "Infirmier2", "stats": (4, 3, 2, 20, 20,10,10)},
 ]
 
 class Display:
@@ -49,42 +49,13 @@ class Display:
             "Infirmier2": pygame.image.load("Images_persos/Nurse2.png").convert_alpha(),
         }
         
-    def show_victory_message(self, message, confetti_color=(255, 255, 255)):
-        # Code for confetti
-        confetti_particles = []  # list for confetti
-        for _ in range(150):
-            x = random.randint(0, WIDTH)
-            y = random.randint(-HEIGHT, 0)
-            speed = random.uniform(2, 5)
-            size = random.randint(2, 5)
-            confetti_particles.append({"x": x, "y": y, "speed": speed, "size": size})  
-        # Show message and animation
-        start_time = pygame.time.get_ticks()
-        duration = 10000
-        while pygame.time.get_ticks() - start_time < duration:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-
-            self.screen.fill(BLACK)
-            text = self.font.render(message, True, (255, 255, 255))
-            text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 3))
-            self.screen.blit(text, text_rect)
-
-            for particle in confetti_particles:
-                particle["y"] += particle["speed"]
-                if particle["y"] > HEIGHT:
-                    particle["y"] = random.randint(-HEIGHT, 0)
-                    particle["x"] = random.randint(0, WIDTH)
-                pygame.draw.circle(self.screen, confetti_color, (particle["x"], int(particle["y"])), particle["size"])
-
-            pygame.display.flip()
-            pygame.time.delay(30)        
-            # After confetti finish, end game
-        pygame.quit()
-        sys.exit()
-         
+        self.objects = []  # List of objects 
+        # initialize font
+        self.font = pygame.font.Font(None, 74)  # default size
+        self.small_font = pygame.font.Font(None, 36)  # add a small font if needed
+        self.message = ""  # initialize attribute 'message'
+        self.message_timer = 0 
+          
     def show_message(self, message, duration=2000):
         """Shows message on the screen for a given time (in milisecond)."""
         self.message = message
@@ -289,7 +260,7 @@ class Display:
 
         # Initialize starting positions for each player's units
         player1_positions = [(i, 0) for i in range(2)]
-        player2_positions = [(4 - i, 4 - 1) for i in range(1, 3)]
+        player2_positions = [(GRID_COLUMNS - i, GRID_ROWS - 1) for i in range(1, 3)]
         # player2_positions = [(GRID_COLUMNS - i, GRID_ROWS - 1) for i in range(1, 3)]
 
         # Main loop for the home screen
@@ -512,7 +483,7 @@ class Display:
                 bottom_lines.append("  Fuite: permet de se téléporter loin des enemis")
             elif isinstance(selected_unit,Infirmier):
                 bottom_lines.append(f"  Potions de soin: {selected_unit.potions_de_soin} restantes")
-                bottom_lines.append(f"  Soin intensif: utilise 5 d'énergie")
+                bottom_lines.append(f"  Soin intensif: utilise 3 d'énergie")
 
             # Bigger font and spacing
             bottom_font = pygame.font.Font(None, 28)
@@ -592,7 +563,15 @@ class Display:
                     pygame.quit()
                     exit()
 
+                
+                
                 if event.type == pygame.KEYDOWN:
+                    # Close the menu if TAB is pressed again
+                    if event.key == pygame.K_TAB:
+                        capacity_choice = False
+                        self.flip_display_basic(selected_unit)
+                        return
+                    
                     if event.key in [pygame.K_1, pygame.K_2]:
                         # Handle special ability selection
                         if event.key == pygame.K_1:
@@ -618,13 +597,13 @@ class Display:
                                             mouse_x, mouse_y = pygame.mouse.get_pos()
                                             # Check if the mouse click intersects with any unit's position
                                             for unit in allies:
-                                                if (abs(selected_unit.x - unit.x) <= selected_unit.attack_range and abs(selected_unit.y - unit.y) == 0) or (abs(selected_unit.y - unit.y) <= selected_unit.attack_range and abs(selected_unit.x - unit.x) ==0):
+                                                if abs(selected_unit.x - unit.x) <= selected_unit.attack_range and abs(selected_unit.y - unit.y) <= selected_unit.attack_range:
                                                     unit_rect = pygame.Rect(unit.x * CELL_SIZE, unit.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
                                                     if unit_rect.collidepoint(mouse_x, mouse_y):
                                                         self.affiche_message_haut(selected_unit.fleche_de_guerison(unit))
                                                         wainting_selection = False
                                                 else:
-                                                    self.affiche_message_centre("Allié trop loin pour pouvoir être soigné")
+                                                    self.affiche_message_centre("Allié trop loin utiliser flèche de soin")
                                                     wainting_selection = False
                         
                             if isinstance(selected_unit,Magicien):
@@ -650,7 +629,7 @@ class Display:
                                                         self.affiche_message_centre(f"{unit.__class__.__name__} empoisonné avec succès")
                                                         wainting_selection = False
                                                 else:
-                                                    self.affiche_message_centre("Allié trop loin pour pouvoir être soigné")
+                                                    self.affiche_message_centre("Allié trop loin pour pouvoir être empoisonné")
                                                     wainting_selection = False
                             
                             if isinstance(selected_unit,Assassin):
@@ -675,25 +654,29 @@ class Display:
                                             mouse_x, mouse_y = pygame.mouse.get_pos()
                                             target_x = mouse_x // CELL_SIZE
                                             target_y = mouse_y // CELL_SIZE
+                                            
+                                            if abs(selected_unit.x - target_x) <= selected_unit.potion_range and abs(selected_unit.y - target_y) <= selected_unit.potion_range:
+                                                # Highlight the target cell and its perimeter
+                                                self.flip_display_basic(selected_unit)
+                                                for dx in range(-1, 2):
+                                                    for dy in range(-1, 2):
+                                                        cell_x = target_x + dx
+                                                        cell_y = target_y + dy
+                                                        if 0 <= cell_x < GRID_COLUMNS and 0 <= cell_y < GRID_ROWS:
+                                                            cell_rect = pygame.Rect(cell_x * CELL_SIZE, cell_y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                                                            highlight = pygame.Surface((CELL_SIZE, CELL_SIZE))
+                                                            highlight.set_alpha(100)
+                                                            highlight.fill((0, 165, 0))
+                                                            self.screen.blit(highlight, cell_rect)
 
-                                            # Highlight the target cell and its perimeter
-                                            self.flip_display_basic(selected_unit)
-                                            for dx in range(-1, 2):
-                                                for dy in range(-1, 2):
-                                                    cell_x = target_x + dx
-                                                    cell_y = target_y + dy
-                                                    if 0 <= cell_x < GRID_COLUMNS and 0 <= cell_y < GRID_ROWS:
-                                                        cell_rect = pygame.Rect(cell_x * CELL_SIZE, cell_y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-                                                        highlight = pygame.Surface((CELL_SIZE, CELL_SIZE))
-                                                        highlight.set_alpha(100)
-                                                        highlight.fill((0, 165, 0))  # Transparent orange
-                                                        self.screen.blit(highlight, cell_rect)
-
-                                            pygame.display.flip()
-                                            # Keep the display visible for 2 seconds (2000 milliseconds)
-                                            pygame.time.wait(2000)
-                                            self.affiche_message_haut(selected_unit.potion_soin(target_x,target_y,allies))
-                                            waiting_selection = False
+                                                pygame.display.flip()
+                                                # Keep the display visible for 2 seconds (2000 milliseconds)
+                                                pygame.time.wait(2000)
+                                                self.affiche_message_haut(selected_unit.potion_soin(target_x,target_y,allies))
+                                                waiting_selection = False
+                                            else:
+                                                self.affiche_message_haut("Allié trop loin pour lui lancer une potion de soin")
+                                                wainting_selection = False
                                 
                         elif event.key == pygame.K_2:
                             
@@ -724,24 +707,28 @@ class Display:
                                             target_x = mouse_x // CELL_SIZE
                                             target_y = mouse_y // CELL_SIZE
 
-                                            # Highlight the target cell and its perimeter
-                                            self.flip_display_basic(selected_unit)
-                                            for dx in range(-1, 2):
-                                                for dy in range(-1, 2):
-                                                    cell_x = target_x + dx
-                                                    cell_y = target_y + dy
-                                                    if 0 <= cell_x < GRID_COLUMNS and 0 <= cell_y < GRID_ROWS:
-                                                        cell_rect = pygame.Rect(cell_x * CELL_SIZE, cell_y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-                                                        highlight = pygame.Surface((CELL_SIZE, CELL_SIZE))
-                                                        highlight.set_alpha(100)
-                                                        highlight.fill((255, 165, 0))  # Transparent orange
-                                                        self.screen.blit(highlight, cell_rect)
+                                            if abs(selected_unit.x - target_x) <= selected_unit.boule_de_feu_range and abs(selected_unit.y - target_y) <= selected_unit.boule_de_feu_range:
+                                                # Highlight the target cell and its perimeter
+                                                self.flip_display_basic(selected_unit)
+                                                for dx in range(-1, 2):
+                                                    for dy in range(-1, 2):
+                                                        cell_x = target_x + dx
+                                                        cell_y = target_y + dy
+                                                        if 0 <= cell_x < GRID_COLUMNS and 0 <= cell_y < GRID_ROWS:
+                                                            cell_rect = pygame.Rect(cell_x * CELL_SIZE, cell_y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                                                            highlight = pygame.Surface((CELL_SIZE, CELL_SIZE))
+                                                            highlight.set_alpha(100)
+                                                            highlight.fill((255, 165, 0))  # Transparent orange
+                                                            self.screen.blit(highlight, cell_rect)
 
-                                            pygame.display.flip()
-                                            # Keep the display visible for 2 seconds (2000 milliseconds)
-                                            pygame.time.wait(2000)
-                                            self.affiche_message_haut(selected_unit.boule_de_feu(target_x, target_y, ennemis))
-                                            waiting_selection = False
+                                                pygame.display.flip()
+                                                # Keep the display visible for 2 seconds (2000 milliseconds)
+                                                pygame.time.wait(2000)
+                                                self.affiche_message_haut(selected_unit.boule_de_feu(target_x, target_y,ennemis))
+                                                waiting_selection = False
+                                            else:
+                                                self.affiche_message_haut("Ennemi trop loin pour lui lancer une boule de feu")
+                                                waiting_selection = False
 
                             if isinstance(selected_unit,Assassin):
                                 capacity_choice = False  # Close the capacity menu
@@ -885,11 +872,11 @@ class Display:
         # Attendre pendant la durée spécifiée
         pygame.time.wait(duree)
 
-    def flip_display_feu(self, target_x, target_y):
+    #def flip_display_feu(self, target_x, target_y):
 
-        # Highlight the fireball target cell
-        target_rect = pygame.Rect(target_x * CELL_SIZE, target_y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-        pygame.draw.rect(self.screen, (255, 100, 0), target_rect, 3)  # Orange outline for targeting
+        # # Highlight the fireball target cell
+        # target_rect = pygame.Rect(target_x * CELL_SIZE, target_y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+        # pygame.draw.rect(self.screen, (255, 100, 0), target_rect, 3)  # Orange outline for targeting
          
     def flip_display(self, selected_unit=None, hovered_cell=None):
         #self.screen.fill(BLACK)
@@ -928,7 +915,12 @@ class Display:
                 rect = pygame.Rect(hovered_cell[0] * CELL_SIZE, hovered_cell[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE)
                 pygame.draw.rect(self.screen, (200, 160, 255), rect)
 
-
+        # Draw objects (rocks, fire, water, etc.)
+        for obj in self.objects:
+            obj.draw(self.screen)
+        
+        # Draw message (if there's one)
+        self.draw_message()
 
         # Draw the menu in the lower-left corner
         self.draw_menu(selected_unit)
@@ -946,6 +938,12 @@ class Display:
 
         for unit in self.game.player1_units + self.game.player2_units:
             unit.draw(self.screen)
+            
+        for obj in self.objects:
+            obj.draw(self.screen)
+        
+        # Draw message (if there's one)
+        self.draw_message()
 
         # Draw the menu in the lower-left corner
         self.draw_menu(selected_unit)

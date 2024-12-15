@@ -5,6 +5,25 @@ from UnitFinal import *
 from DisplayFinal import *
 from PersonnagesFinal import *
 
+# A terme, remplacer par vraies statistiques des personnages dans la fonction remplacer Unit par nos classes Personnages
+class GameObject:
+    def __init__(self, x, y, obj_type):
+        self.x = x
+        self.y = y
+        self.obj_type = obj_type
+
+        # Image object type
+        if obj_type == "piedra":
+            self.image = pygame.image.load("rock.png").convert_alpha()
+            self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
+        else:
+            self.image = pygame.Surface((CELL_SIZE, CELL_SIZE))
+            self.image.fill((255, 0, 0))  # unknown objects in red color
+
+    def draw(self, screen):
+        screen.blit(self.image, (self.x * CELL_SIZE, self.y * CELL_SIZE))
+
+
 class Game:
     def __init__(self, screen):
         self.screen = screen
@@ -12,6 +31,22 @@ class Game:
         self.player2_units = []
         self.reset_jeu = False  # Flag to indicate a reset
         self.display = Display(self.screen,self)
+        
+        # Generate objects at the beginning of the game
+        self.generate_objects()
+
+    def generate_objects(self):
+        """Generate rocks and other objects on the map."""
+        for _ in range(10):  # Number of objects
+            x, y = random.randint(0, GRID_COLUMNS - 1), random.randint(0, GRID_ROWS - 1)
+            self.display.objects.append(GameObject(x, y, "piedra"))
+    
+    def is_cell_occupied(self, x, y):
+        """Verify if cell is occupied by an object (like a rock)."""
+        for obj in self.display.objects:  # Itera on the objects on the map
+            if obj.x == x and obj.y == y:
+                return True  # If there is an object, return True
+        return False  # If there is not, return False  
 
     def pause_menu(self):
         """Displays the pause menu with options to resume or go back to the home screen."""
@@ -123,10 +158,14 @@ class Game:
                         final_dx = proposed_x - selected_unit.x
                         final_dy = proposed_y - selected_unit.y
                         if abs(final_dx) + abs(final_dy) <= selected_unit.mouvement:
-                            if selected_unit.move(final_dx, final_dy, self.player1_units + self.player2_units):
-                                #selected_unit.is_selected = False
-                                return  # Exit the function after moving the unit
-
+                            if not self.is_cell_occupied(proposed_x, proposed_y):
+                                if selected_unit.move(final_dx, final_dy, self.player1_units + self.player2_units):
+                                    return
+                                else:
+                                    self.display.show_message("You can't move, cell is occupied!")
+                            else:
+                                self.display.show_message("You can't move, cell is occupied by an obstacle!")
+                            break
                     # Update proposed cell position with arrow keys
                     if dx != 0 or dy != 0:
                         new_x = proposed_x + dx
@@ -170,18 +209,14 @@ class Game:
                         self.pause_menu()
                         if self.reset_jeu:
                             return  # Exit if the reset flag is set after the pause menu
-
+    
                     if event.key == pygame.K_TAB:
                         if not capacity_used:
                             self.display.capacity_choice(selected_unit)
                             self.display.draw_menu(selected_unit)
-                            if enemies_in_range and enemies_in_range[selected_enemy_index].vie <= 0:
-                                self.player2_units.remove(enemies_in_range[selected_enemy_index])
-                            if not self.player2_units:
-                                self.display.show_victory_message("Bravo ! Vous avez gagné")
                             capacity_used = True  # Mark capacity as used
                         else:
-                            self.display.affiche_message_centre("Capacité déjà utilisée pendant ce tour")
+                            self.display.affiche_message_centre("Vous avez choisi de ne pas utiliser de capacité")
 
                     elif event.key == pygame.K_a:
                         if enemies_in_range:
@@ -199,6 +234,7 @@ class Game:
                                 self.player2_units.remove(enemy)
                                 self.check_victory()
                             return
+                        return
 
             # Update the display and highlight the selected enemy
             self.display.flip_display_basic(selected_unit)
@@ -247,10 +283,6 @@ class Game:
                         if not capacity_used:
                             self.display.capacity_choice(selected_unit)
                             self.display.draw_menu(selected_unit)
-                            if enemies_in_range and enemies_in_range[selected_enemy_index].vie <= 0:
-                                self.player1_units.remove(enemies_in_range[selected_enemy_index])
-                            if not self.player1_units:
-                                self.display.show_victory_message("Bravo ! Vous avez gagné")
                             capacity_used = True  # Mark capacity as used
                         else:
                             self.display.affiche_message_centre("Capacité déjà utilisée pendant ce tour")
@@ -271,6 +303,7 @@ class Game:
                                 self.player1_units.remove(enemy)
                                 self.check_victory()
                             return
+                        return
 
             # Update the display and highlight the selected enemy
             self.display.flip_display_basic(selected_unit)
@@ -307,6 +340,7 @@ def main():
                 unit.is_selected = True
                 game.handle_player_turn(unit)
                 game.handle_player1_attack(unit)
+                unit.recup_energie()
                 unit.is_selected = False  # Deselect the unit after moving
 
             # Handle player 2's turn by moving all units one by one
@@ -314,6 +348,7 @@ def main():
                 unit.is_selected = True
                 game.handle_player_turn(unit)
                 game.handle_player2_attack(unit)
+                unit.recup_energie()
                 unit.is_selected = False  # Deselect the unit after moving
 
             # Check if the game has been reset (e.g., when returning to the main menu)
