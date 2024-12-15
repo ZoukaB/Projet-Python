@@ -174,10 +174,10 @@ class Display:
             # Display character powers text
             powers_text_lines = [
                 "Pouvoirs des Personnages:",
-                "Guerrier: Puissant en attaque rapprochée.",
-                "Archer: Attaque à distance avec précision.",
-                "Magicien: Utilise des sorts puissants.",
-                "Assassin: Agile et rapide en déplacement.",
+                "Guerrier: Puissant en attaque rapprochée. Il a des potions pour décupler sa vitalité et peut sacrifier de l'énergie pour plus de létalité",
+                "Archer: Spécialiste des attaques à distance. Il a concocté des flèches aux pouvoirs régénérateurs pour ses alliées et d'autres bien plus mortelles pour ses ennemis",
+                "Magicien: Adepte de sortilèges mortifère. Dans son arsenal magique, il possède une boule de feu et une vapeur empoisonnée",
+                "Assassin: Roublard agile et rusé. Il préférera peut être s'enfuir d'un combat désavantageux, mais s'il décide vraiment de combattre, une seule petite blessure lui suffira pour tuer son ennemi",
             ]
 
             for i, line in enumerate(powers_text_lines):
