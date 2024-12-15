@@ -96,7 +96,7 @@ class Display:
             self.draw_semi_transparent_background()  # Draw the semi-transparent background
 
             # Draw the game title
-            title_text = title_font.render("Mon Jeu de Stratégie", True, WHITE)
+            title_text = title_font.render("Fantasy Battle", True, WHITE)
             self.screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, HEIGHT // 4))
 
             # Draw the buttons
