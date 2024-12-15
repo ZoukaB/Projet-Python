@@ -160,12 +160,12 @@ class Game:
         player1_units = []
         player2_units = []
 
-        for i, character in enumerate(CHARACTER_OPTIONS[:4]):  # Les 4 premières options pour player1
+        for i, character in enumerate(CHARACTER_OPTIONS_p1[:4]):  # Les 4 premières options pour player1
             character_stats = character["stats"]
             unit = Unit(x=i, y=i, character_stats=character_stats, team='player1')
             player1_units.append(unit)
 
-        for i, character in enumerate(CHARACTER_OPTIONS[4:]):  # Les 4 suivantes pour player2
+        for i, character in enumerate(CHARACTER_OPTIONS_p2[4:]):  # Les 4 suivantes pour player2
             character_stats = character["stats"]
             unit = Unit(x=i, y=i, character_stats=character_stats, team='player2')
             player2_units.append(unit)

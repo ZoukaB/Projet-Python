@@ -14,18 +14,54 @@ class GameObject:
         self.y = y
         self.obj_type = obj_type
 
-        # Image according to object type
-        if obj_type == "piedra":
-            self.image = pygame.image.load("rock.png").convert_alpha()
-            self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
-        else:
-            self.image = pygame.Surface((CELL_SIZE, CELL_SIZE))
-            self.image.fill((255, 0, 0))  # Red for unknown objects
-
     def draw(self, screen):
         screen.blit(self.image, (self.x * CELL_SIZE, self.y * CELL_SIZE))
 
+        # # Image according to object type
+        # if obj_type == "piedra":
+        #     self.image = pygame.image.load("rock.png").convert_alpha()
+        #     self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
+        # else:
+        #     self.image = pygame.Surface((CELL_SIZE, CELL_SIZE))
+        #     self.image.fill((255, 0, 0))  # Red for unknown objects
 
+class Rock(GameObject):
+    # rock won't allow characters to pass
+    def __init__ (self, x, y):
+        super().__init__(x, y, "Rock")
+        self.image = pygame.image.load("rock.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
+        self.passable = False
+
+class Bush(GameObject):
+    def __init__(self, x,y):
+        super().__init__(x, y, "Bush")
+        self.image = pygame.image.load("bush.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
+        self.character_hidden = True
+        self.passable = True
+
+class Fire(GameObject):
+    def __init__(self, x, y):
+        super().__init__(x,y, "Fire")
+        self.image = pygame.image.load("fire.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
+        self.damage = 3
+        self.passable = True
+        self.contains_fire = True
+        self.extinguished = False # verify if the fire is extinguished
+
+    # we want only the wizard to extinguished that
+    def interact(self, unit):
+        if isinstance(unit, Magicien):
+            self.extinguished = True
+            return "extinguished"
+        else:
+            return "damage"
+
+
+        
+    
 class Game:
     def __init__(self, screen):
         self.screen = screen
@@ -39,17 +75,42 @@ class Game:
 
     def generate_objects(self):
         """Generate rocks and other objects on the map."""
-        for _ in range(10):  # Number of objects
-            x, y = random.randint(0, GRID_COLUMNS - 1), random.randint(0, GRID_ROWS - 1)
-            self.display.objects.append(GameObject(x, y, "piedra"))
+        # for _ in range(10):  # Number of objects
+        #     x, y = random.randint(0, GRID_COLUMNS - 1), random.randint(0, GRID_ROWS - 1)
+        #     self.display.objects.append(GameObject(x, y, "piedra"))
+        # objects_in_map = [
+        #     Rock(3,2), Rock(5,4), Rock(5,5), Rock(5,6)
+        #     Bush(4,5), Bush(5,9), Bush(7,9), Bush(6,5)
+        #     Fr
+        # ]
+        objects_in_map = [
+            (2,2), (4,5), (6,7), (8,8)
+        ]
+
+        for x, y in objects_in_map:
+            if not self.is_cell_occupied(x,y):
+                if (x,y) == (4,5):
+                    self.display.objects.append(Bush(x,y))
+                elif (x,y) == (6,7):
+                    self.display.objects.append(Fire(x,y))
+                else:
+                    self.display.objects.append(Rock(x,y)) 
+
     
     def is_cell_occupied(self, x, y):
         """Verify is cell is occupied by an object (like a rock)."""
         for obj in self.display.objects:  # Iterate over the map objects
             if obj.x == x and obj.y == y:
-                return True  # If there is an object on the cell, returns True
-        return False  # If there is not object, returns False        
+                return obj #True  # If there is an object on the cell, returns True
+        return None #False  # If there is not object, returns False        
     
+    def is_cell_passable(self, x, y):
+        """Check is character can hidde or can't pass"""
+        for obj in self.display.objects:
+            if obj.x == x and obj.y == y:
+                return obj.passable # if the object type allows it
+        return True # no object on cell, passable by default
+
     def check_victory(self):
         """Verify if there's a winner."""
         if not self.player1_units:
@@ -202,11 +263,39 @@ class Game:
                             final_dx = proposed_x - selected_unit.x
                             final_dy = proposed_y - selected_unit.y
                             if abs(final_dx) + abs(final_dy) <= selected_unit.mouvement:
-                                if not self.is_cell_occupied(proposed_x, proposed_y):
+                                #if not self.is_cell_occupied(proposed_x, proposed_y):
+                                cell_obj = self.is_cell_occupied(proposed_x, proposed_y)
+                                if cell_obj is None or (cell_obj and cell_obj.passable):
                                     # Move unit
                                     if selected_unit.move(final_dx, final_dy, self.player1_units + self.player2_units):
                                         moved_units.append(selected_unit)
+
+                                        # Bush, hide unit
+                                        if cell_obj:
+                                            if isinstance(cell_obj, Bush):
+                                                selected_unit.is_hidden = True
+                                                self.display.show_message(f"{selected_unit.__class__.__name__} is hiding in the bush!")
+                                            elif isinstance(cell_obj, Fire):
+                                            # Fire extiguished
+                                                if isinstance(selected_unit, Magicien):
+                                                    if selected_unit.extinguish_fire(cell_obj, self.display):
+                                                        return
+                                                    # cell_obj.extinguished = True   
+                                                    # self.display.objects.remove(cell_obj) # remove fire from the grid
+                                                    # self.display.show_message("The wizard extinguished the fire!")
+                 
+                                                else:
+                                                    selected_unit.vie -= cell_obj.damage
+                                                    self.display.show_message(f"{selected_unit.__class__.__name__} took {cell_obj.damage} damage!")
+
+                                        else:
+                                            selected_unit.is_hidden = False
                                     
+                                    #else:
+                                    #    if isinstance(cell_obj, Rock):
+                                    #        self.display.show_message()
+
+
                                         # Verify if enemy units are in range to attack
                                         enemies_in_range = [
                                             enemy for enemy in self.player2_units 
