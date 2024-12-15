@@ -119,10 +119,9 @@ class Display:
         # List of rules to display
         rules_text_lines = [
             "Règles du Jeu:",
-            "1. Chaque joueur choisit 2 personnages.",
-            "2. Les joueurs déplacent leurs unités à tour de rôle.",
-            "3. L'objectif est de vaincre toutes les unités adverses.",
-            "4. Chaque unité a des capacités uniques.",
+            "1. Chaque joueur choisit 2 personnages dans l'écran de sélection. Chaque personnage possède des statistiques et capacités spéciales propre.",
+            "2. Les joueurs déplacent leurs unités à tour de rôle à l'aide des flèches et de la commande espace. S'ils sont dans la range équivalente, ils peuvent ensuite lancer une attaque ou charger un ennemi ",
+            "3. L'objectif est de vaincre les deux unités adverses.",
         ]
 
         # Calculate the total height of the text block
