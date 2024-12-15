@@ -72,7 +72,7 @@ class Archer(Unit):
                            2, self.y * CELL_SIZE + CELL_SIZE // 2), CELL_SIZE // 3)
 
     def fleche_de_guerison(self,target):
-        #Tire un fleche qui soigne ses aliés 
+        #Tire un fleche qui soigne ses alliés 
         if self.fleche_soigneuse != 0:
             self.fleche_soigneuse -= 1
             if target.vie <= target.max_vie-5:

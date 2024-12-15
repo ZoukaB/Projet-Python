@@ -119,10 +119,9 @@ class Display:
         # List of rules to display
         rules_text_lines = [
             "Règles du Jeu:",
-            "1. Chaque joueur choisit 2 personnages.",
-            "2. Les joueurs déplacent leurs unités à tour de rôle.",
-            "3. L'objectif est de vaincre toutes les unités adverses.",
-            "4. Chaque unité a des capacités uniques.",
+            "1. Chaque joueur choisit 2 personnages dans l'écran de sélection. Chaque personnage possède des statistiques et capacités spéciales propre.",
+            "2. Les joueurs déplacent leurs unités à tour de rôle à l'aide des flèches et de la commande espace. S'ils sont dans la range équivalente, ils peuvent ensuite lancer une attaque ou charger un ennemi ",
+            "3. L'objectif est de vaincre les deux unités adverses.",
         ]
 
         # Calculate the total height of the text block
@@ -174,10 +173,10 @@ class Display:
             # Display character powers text
             powers_text_lines = [
                 "Pouvoirs des Personnages:",
-                "Guerrier: Puissant en attaque rapprochée.",
-                "Archer: Attaque à distance avec précision.",
-                "Magicien: Utilise des sorts puissants.",
-                "Assassin: Agile et rapide en déplacement.",
+                "Guerrier: Puissant en attaque rapprochée. Il a des potions pour décupler sa vitalité et peut sacrifier de l'énergie pour plus de létalité",
+                "Archer: Spécialiste des attaques à distance. Il a concocté des flèches aux pouvoirs régénérateurs pour ses alliées et d'autres bien plus mortelles pour ses ennemis",
+                "Magicien: Adepte de sortilèges mortifère. Dans son arsenal magique, il possède une boule de feu et une vapeur empoisonnée",
+                "Assassin: Roublard agile et rusé. Il préférera peut être s'enfuir d'un combat désavantageux, mais s'il décide vraiment de combattre, une seule petite blessure lui suffira pour tuer son ennemi",
             ]
 
             for i, line in enumerate(powers_text_lines):
