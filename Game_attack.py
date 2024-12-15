@@ -14,16 +14,32 @@ class GameObject:
         self.y = y
         self.obj_type = obj_type
 
-        # Image object type
-        if obj_type == "piedra":
-            self.image = pygame.image.load("rock.png").convert_alpha()
-            self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
-        else:
-            self.image = pygame.Surface((CELL_SIZE, CELL_SIZE))
-            self.image.fill((255, 0, 0))  # unknown objects in red color
-
     def draw(self, screen):
         screen.blit(self.image, (self.x * CELL_SIZE, self.y * CELL_SIZE))
+
+class Rock(GameObject):
+    # rock won't allow characters to pass
+    def __init__ (self, x, y):
+        super().__init__(x, y, "Rock")
+        self.image = pygame.image.load("rock.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
+        self.passable = False
+
+class Bush(GameObject):
+    def __init__(self, x,y):
+        super().__init__(x, y, "Bush")
+        self.image = pygame.image.load("bush.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
+        self.character_hidden = True
+        self.passable = True
+
+class Fire(GameObject):
+    def __init__(self, x, y):
+        super().__init__(x,y, "Fire")
+        self.image = pygame.image.load("fire.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
+        self.damage = 3
+        self.passable = True
 
 
 class Game:
@@ -39,16 +55,37 @@ class Game:
 
     def generate_objects(self):
         """Generate rocks and other objects on the map."""
-        for _ in range(10):  # Number of objects
-            x, y = random.randint(0, GRID_COLUMNS - 1), random.randint(0, GRID_ROWS - 1)
-            self.display.objects.append(GameObject(x, y, "piedra"))
+        rocks_in_map = [
+                (3, 3), (3, 2), (3, 1), (3, 0), (6, 7), (7, 7), (19, 1), (20, 1),
+                (21, 7), (21, 7), (7, 14), (8, 14), (23, 11), (23, 12), (23, 13),
+                (23, 14)
+        ]
+        bush_in_map = [
+                (8, 2), (9, 2), (10, 2), (11, 2), (4, 11), (5, 11), (6, 11),
+                (13, 6), (14, 6), (15, 6), (13, 7), (14, 7), (15, 7), (13, 8),
+                (14, 8), (15, 8), (21, 4), (22, 4), (23, 4), (24, 1), (25, 1),
+                (17, 13), (18, 13), (19, 13)
+        ]
+        fire_in_map = [
+                (10, 4), (11, 4), (10, 5), (11, 5), (15, 2), (10, 9), (10, 10),
+                (10, 11), (13, 12), (17, 10), (17, 11), (18, 10), (18, 11)
+            ]
+        for x, y in rocks_in_map:
+            if not self.is_cell_occupied(x,y):
+                self.display.objects.append(Rock(x,y))
+        for x, y in bush_in_map:
+            if not self.is_cell_occupied(x,y):
+                self.display.objects.append(Bush(x,y))
+        for x, y in fire_in_map:
+            if not self.is_cell_occupied(x,y):
+                self.display.objects.append(Fire(x,y))
     
     def is_cell_occupied(self, x, y):
         """Verify if cell is occupied by an object (like a rock)."""
         for obj in self.display.objects:  # Itera on the objects on the map
             if obj.x == x and obj.y == y:
-                return True  # If there is an object, return True
-        return False  # If there is not, return False        
+                return obj  # If there is an object, return True
+        return None  # If there is not, return False        
     
     def execute_critical_bite(self, assassin, enemy):
         """Execute the ability ‘Critical Fang’."""
@@ -239,16 +276,47 @@ class Game:
                                             final_dx = proposed_x - selected_unit.x
                                             final_dy = proposed_y - selected_unit.y
                                             if abs(final_dx) + abs(final_dy) <= selected_unit.mouvement:
-                                                if not self.is_cell_occupied(proposed_x, proposed_y):
+                                                #if not self.is_cell_occupied(proposed_x, proposed_y):
+                                                cell_obj = self.is_cell_occupied(proposed_x, proposed_y)
+                                                if cell_obj is None or (cell_obj and cell_obj.passable):
+
+                                                    # Move unit
                                                     if selected_unit.move(final_dx, final_dy, self.player1_units + self.player2_units):
                                                         moved_units.append(selected_unit)
+
+                                                        # bush, hide unit
+                                                        if cell_obj:
+                                                            if isinstance(cell_obj,Rock):
+                                                                self.display.show_message("You cant pass trough this rock")
+                                                            if isinstance(cell_obj, Bush):
+                                                                selected_unit.is_hidden = True
+                                                                self.display.show_message(f"{selected_unit.__class__.__name__} is hiding in the bush!")
+                                                            elif isinstance(cell_obj, Fire):  
+                                                                selected_unit.vie -= cell_obj.damage
+                                                                self.display.show_message(f"{selected_unit.__class__.__name__} took {cell_obj.damage} damage!")
+                                                        else:
+                                                            selected_unit.is_hidden = False
+
+                                                        # Add unit to moved_units
+                                                        moved_units.append(selected_unit)
+                                                        
+                                                        # Select next unit
                                                         selected_unit = select_next_unit()
+                                                        
+                                                        # If there's no more units, end turn
+                                                        if selected_unit is None:
+                                                            return
+                                                        
+                                                        # Upgrade coordenates 
+                                                        proposed_x, proposed_y = selected_unit.x, selected_unit.y
+                                                        hovered_cell = (proposed_x, proposed_y)
+                                                        
                                                         return
                                                     else:
-                                                        self.display.show_message("You can't move, cell is occupied!")
+                                                        if self.is_cell_occupied(proposed_x, proposed_y):
+                                                            self.display.show_message("You can't move, cell is occupied!")
                                                 else:
                                                     self.display.show_message("You can't move, cell is occupied by an obstacle!")
-                                                break
 
                                     self.display.flip_display(selected_unit, hovered_cell)
 
@@ -568,16 +636,47 @@ class Game:
                                             final_dx = proposed_x - selected_unit.x
                                             final_dy = proposed_y - selected_unit.y
                                             if abs(final_dx) + abs(final_dy) <= selected_unit.mouvement:
-                                                if not self.is_cell_occupied(proposed_x, proposed_y):
+                                                #if not self.is_cell_occupied(proposed_x, proposed_y):
+                                                cell_obj = self.is_cell_occupied(proposed_x, proposed_y)
+                                                if cell_obj is None or (cell_obj and cell_obj.passable):
+
+                                                    # Move unit
                                                     if selected_unit.move(final_dx, final_dy, self.player1_units + self.player2_units):
                                                         moved_units.append(selected_unit)
+
+                                                        # bush, hide unit
+                                                        if cell_obj:
+                                                            if isinstance(cell_obj,Rock):
+                                                                self.display.show_message("You cant pass trough this rock")
+                                                            if isinstance(cell_obj, Bush):
+                                                                selected_unit.is_hidden = True
+                                                                self.display.show_message(f"{selected_unit.__class__.__name__} is hiding in the bush!")
+                                                            elif isinstance(cell_obj, Fire):  
+                                                                selected_unit.vie -= cell_obj.damage
+                                                                self.display.show_message(f"{selected_unit.__class__.__name__} took {cell_obj.damage} damage!")
+                                                        else:
+                                                            selected_unit.is_hidden = False
+
+                                                        # Add unit to moved_units
+                                                        moved_units.append(selected_unit)
+                                                        
+                                                        # Select next unit
                                                         selected_unit = select_next_unit()
+                                                        
+                                                        # If there's no more units, end turn
+                                                        if selected_unit is None:
+                                                            return
+                                                        
+                                                        # Upgrade coordenates 
+                                                        proposed_x, proposed_y = selected_unit.x, selected_unit.y
+                                                        hovered_cell = (proposed_x, proposed_y)
+                                                        
                                                         return
                                                     else:
-                                                        self.display.show_message("You can't move, cell is occupied!")
+                                                        if self.is_cell_occupied(proposed_x, proposed_y):
+                                                            self.display.show_message("You can't move, cell is occupied!")
                                                 else:
                                                     self.display.show_message("You can't move, cell is occupied by an obstacle!")
-                                                break
 
                                     self.display.flip_display(selected_unit, hovered_cell)
 
