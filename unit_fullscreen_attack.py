@@ -45,7 +45,10 @@ class Unit:
         self.max_vie = max_vie
         self.team = team  # 'player1' or 'player2'
         self.is_selected = False
-        self.range_ = range_  # Attack range (according to unit)
+        self.range_ = range_  # Attack range (depending on the unit)
+        self.abilities = []
+    
+    
 
     def move(self, dx, dy, all_units):
         target_x = self.x + dx
@@ -70,8 +73,8 @@ class Unit:
         Attacks target unit. 
         Minimize health life based on attack and defense.
         """
-        # Calculates the damage as the difference between attack and defense.
-        damage = max(3, self.attaque - target.defense)
+        # Calculate the damage as the difference between attack and defense
+        damage = max(1, self.attaque - target.defense)
         target.vie -= damage  # Reduce health life of the target unit
         target.vie = max(0, target.vie)  # Avoids having negative health life
         return damage  # Returns the damage inflicted
@@ -87,12 +90,13 @@ class Unit:
         """
         Draws unit on the screen along with health life bar.
         """
-        color = BLUE if self.team == 'player1' else RED
-        pygame.draw.circle(screen, color, 
-                           (self.x * CELL_SIZE + CELL_SIZE // 2, 
-                            self.y * CELL_SIZE + CELL_SIZE // 2), CELL_SIZE // 3)
+         # Draw image according to the player
+        image = self.image_player1 if self.team == 'player1' else self.image_player2
         
-        # Draws health life bar
+        # Draw image
+        screen.blit(image, (self.x * CELL_SIZE, self.y * CELL_SIZE))
+        
+        # Draw health life bar
         health_bar_width = CELL_SIZE
         health_bar_height = 5
         health_ratio = self.vie / self.max_vie
@@ -103,19 +107,97 @@ class Unit:
         
 class Guerrier(Unit):
     def __init__(self, x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team):
-        super().__init__(x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team, range_=1)  # Guerrier range 1
+        super().__init__(x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team, range_=1)
+        
+        # Images of sword and warrior
+        self.arrow_image = pygame.image.load("Espada.png").convert_alpha()
+        self.arrow_image = pygame.transform.scale(self.arrow_image, (CELL_SIZE // 2, CELL_SIZE // 2))
+        
+        self.image_player1 = pygame.image.load("PersosBoard/warrior1.png").convert_alpha()
+        self.image_player1 = pygame.transform.scale(self.image_player1, (CELL_SIZE, CELL_SIZE))
 
-class Archer(Unit):  # Archer heredity from Unit
+        self.image_player2 = pygame.image.load("PersosBoard/warrior2.png").convert_alpha()
+        self.image_player2 = pygame.transform.scale(self.image_player2, (CELL_SIZE, CELL_SIZE))
+
+        self.abilities = ["Golpe Poderoso", "Escudo Defensivo"]
+    
+    def attack_with_animation(self, target, game, screen):
+        """
+        Attack animation with sword
+        """
+        start_x = self.x * CELL_SIZE + CELL_SIZE // 2
+        start_y = self.y * CELL_SIZE + CELL_SIZE // 2
+        end_x = target.x * CELL_SIZE + CELL_SIZE // 2
+        end_y = target.y * CELL_SIZE + CELL_SIZE // 2
+
+        angle = self.calculate_angle(start_x, start_y, end_x, end_y)
+        steps = 30
+        
+        for step in range(steps):
+            t = step / steps
+            current_x = int(start_x + t * (end_x - start_x))
+            current_y = int(start_y + t * (end_y - start_y))
+            
+            game.display.flip_display()  
+            rotated_sword = pygame.transform.rotate(self.arrow_image, angle)
+            sword_rect = rotated_sword.get_rect(center=(current_x, current_y))
+            screen.blit(rotated_sword, sword_rect)
+
+            pygame.display.flip()
+            pygame.time.delay(30)
+
+        # Calculate damage and apply to target
+        damage = max(1, self.attaque - target.defense)
+        target.vie -= damage
+        return damage
+    
+    def calculate_angle(self, start_x, start_y, end_x, end_y):
+        """
+        Calculate degree of rotation of the sword in degrees.
+        """
+        dx = end_x - start_x
+        dy = end_y - start_y
+        return -math.degrees(math.atan2(dy, dx))
+        
+    def powerful_strike(self, target, game, screen):
+        """
+        Powerful blow/Golpe Poderoso: inflicts damage of 8 to the target.
+        """
+        # Attack animation
+        self.attack_with_animation(target, game, screen)
+
+        # Inflict damage of 8 (ignore defense)
+        damage = 8
+        target.vie -= damage
+
+        # Message of inflicted damage
+        game.display.show_message(
+            f"{self.__class__.__name__} used Powerful Blow and inflicted {damage} of damage to {target.__class__.__name__}!"
+        )
+        return damage
+
+        
+
+
+
+class Archer(Unit):
     def __init__(self, x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team):
         super().__init__(x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team, range_=4)
-        # Upload arrow image
+        # Image of the arrow
         self.arrow_image = pygame.image.load("arrow.png").convert_alpha()
-        self.arrow_image = pygame.transform.scale(self.arrow_image, (CELL_SIZE // 2, CELL_SIZE // 2))  # Scale image
+        self.arrow_image = pygame.transform.scale(self.arrow_image, (CELL_SIZE // 2, CELL_SIZE // 2))  # scale image
+        
+        self.image_player1 = pygame.image.load("PersosBoard/archer1.png").convert_alpha()
+        self.image_player1 = pygame.transform.scale(self.image_player1, (CELL_SIZE, CELL_SIZE))
 
+        self.image_player2 = pygame.image.load("PersosBoard/archer2.png").convert_alpha()
+        self.image_player2 = pygame.transform.scale(self.image_player2, (CELL_SIZE, CELL_SIZE))
+        
+        self.abilities = ["Flecha Curatoria"]  # Archer's ability
 
     def attack_with_animation(self, target, game, screen):
         """
-        Simulates attack of the archer with animated arrow.
+        Simulate the normal attack of the archer with animated arrow.
         """
         # Initial and final coordinates of the arrow
         start_x = self.x * CELL_SIZE + CELL_SIZE // 2
@@ -123,14 +205,14 @@ class Archer(Unit):  # Archer heredity from Unit
         end_x = target.x * CELL_SIZE + CELL_SIZE // 2
         end_y = target.y * CELL_SIZE + CELL_SIZE // 2
 
-        # Animation duration
+        # Duration of the animation
         steps = 30
         for step in range(steps):
             t = step / steps
             current_x = int(start_x + t * (end_x - start_x))
             current_y = int(start_y + t * (end_y - start_y))
 
-            # Draw movement of the arrow
+            # Draw arrow in movement
             game.display.flip_display()  # Redraw board
             arrow_rotated = pygame.transform.rotate(self.arrow_image, self.calculate_angle(start_x, start_y, end_x, end_y))
             arrow_rect = arrow_rotated.get_rect(center=(current_x, current_y))
@@ -139,14 +221,22 @@ class Archer(Unit):  # Archer heredity from Unit
             pygame.display.flip()
             pygame.time.delay(30)
 
-        # Attack and calculate damage
+        # Attack or healing
         damage = max(1, self.attaque - target.defense)
         target.vie -= damage
         return damage
-    
+
+    def heal_with_arrow(self, ally):
+        """
+        Throw healing arrow to an ally.
+        """
+        heal_amount = 10  # amount of healing
+        ally.vie += heal_amount
+        return heal_amount
+
     def calculate_angle(self, start_x, start_y, end_x, end_y):
         """
-        Calculate angle rotation of the arrow in degrees.
+        Calculates degree of rotation of the arrow in degrees.
         """
         dx = end_x - start_x
         dy = end_y - start_y
@@ -155,28 +245,104 @@ class Archer(Unit):  # Archer heredity from Unit
 
 class Magicien(Unit):
     def __init__(self, x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team):
-        super().__init__(x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team, range_=6)  
-        # Upload arrow image
-        self.fireball_image = pygame.image.load("fireball.png").convert_alpha()
-        self.fireball_image = pygame.transform.scale(self.arrow_image, (CELL_SIZE // 2, CELL_SIZE // 2))  # Scale image
+        super().__init__(x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team, range_=6)  # Magicien has a range of 2
+        
+        self.abilities = ["Poción de Curación", "Ataque de Área"]
+        # Image of the fireball
+        self.arrow_image = pygame.image.load("fireball.png").convert_alpha()
+        self.arrow_image = pygame.transform.scale(self.arrow_image, (CELL_SIZE // 2, CELL_SIZE // 2))  # Scale image
+        
+        self.image_player1 = pygame.image.load("PersosBoard/wizard1.png").convert_alpha()
+        self.image_player1 = pygame.transform.scale(self.image_player1, (CELL_SIZE, CELL_SIZE))
+
+        self.image_player2 = pygame.image.load("PersosBoard/wizard2.png").convert_alpha()
+        self.image_player2 = pygame.transform.scale(self.image_player2, (CELL_SIZE, CELL_SIZE))
+        
     def attack_with_animation(self, target, game, screen):
         """
-        Simulates attack of the archer with animated fireball.
+        Simulates attack of the fireball.
         """
-        # Initial and final coordinates of the fireball
+        # Initial and final coordinates of fireball
         start_x = self.x * CELL_SIZE + CELL_SIZE // 2
         start_y = self.y * CELL_SIZE + CELL_SIZE // 2
         end_x = target.x * CELL_SIZE + CELL_SIZE // 2
         end_y = target.y * CELL_SIZE + CELL_SIZE // 2
 
-        # Animation duration
+        # Duration of the animation
         steps = 30
         for step in range(steps):
             t = step / steps
             current_x = int(start_x + t * (end_x - start_x))
             current_y = int(start_y + t * (end_y - start_y))
 
-            # Draw movement of the fireball
+            # Draw fireball with movement
+            game.display.flip_display()  # Redraw board
+            arrow_rotated = pygame.transform.rotate(self.arrow_image, self.calculate_angle(start_x, start_y, end_x, end_y))
+            arrow_rect = arrow_rotated.get_rect(center=(current_x, current_y))
+            screen.blit(arrow_rotated, arrow_rect)
+
+            pygame.display.flip()
+            pygame.time.delay(30)
+
+        # Attack and calculate the damage
+        damage = max(1, self.attaque - target.defense)
+        target.vie -= damage
+        return damage
+    
+    def calculate_angle(self, start_x, start_y, end_x, end_y):
+        """
+        Calculate the angle of rotation of the fireball.
+        """
+        dx = end_x - start_x
+        dy = end_y - start_y
+        return -math.degrees(math.atan2(dy, dx))    
+    
+    def heal(self):
+        """Restores a life percentage of life to the wizard."""
+        heal_amount = self.max_vie * 0.25  # Heals 25% of max life
+        self.vie = min(self.max_vie, self.vie + heal_amount)  # So it does't exceed max life
+        return heal_amount
+
+class Assassin(Unit):
+    def __init__(self, x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team):
+        super().__init__(x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team, range_=1)
+        
+        # Image to attack and character
+        self.arrow_image = pygame.image.load("ninja.png").convert_alpha()
+        self.arrow_image = pygame.transform.scale(self.arrow_image, (CELL_SIZE // 2, CELL_SIZE // 2))
+        
+        self.image_player1 = pygame.image.load("PersosBoard/assasin1.png").convert_alpha()
+        self.image_player1 = pygame.transform.scale(self.image_player1, (CELL_SIZE, CELL_SIZE))
+
+        self.image_player2 = pygame.image.load("PersosBoard/assasin2.png").convert_alpha()
+        self.image_player2 = pygame.transform.scale(self.image_player2, (CELL_SIZE, CELL_SIZE))
+        
+        self.abilities = ["Movimiento Adicional", "Colmillo Crítico"]
+        
+        # Skill status
+        self.colmillo_critico_target = None  # Selected target to attack
+        self.colmillo_critico_turns = 0  # Shift counter
+        self.colmillo_critico_effect = False  # Active effect
+        self.colmillo_critico_initial_vie = 0  # Initial enemy health to restore correctly
+
+    def attack_with_animation(self, target, game, screen):
+        """
+        Simulate the attack of the assassin.
+        """
+        # Initial and final coordinates of the attack
+        start_x = self.x * CELL_SIZE + CELL_SIZE // 2
+        start_y = self.y * CELL_SIZE + CELL_SIZE // 2
+        end_x = target.x * CELL_SIZE + CELL_SIZE // 2
+        end_y = target.y * CELL_SIZE + CELL_SIZE // 2
+
+        # Duration of animation
+        steps = 30
+        for step in range(steps):
+            t = step / steps
+            current_x = int(start_x + t * (end_x - start_x))
+            current_y = int(start_y + t * (end_y - start_y))
+
+            # Draw attack movement
             game.display.flip_display()  # Redraw board
             arrow_rotated = pygame.transform.rotate(self.arrow_image, self.calculate_angle(start_x, start_y, end_x, end_y))
             arrow_rect = arrow_rotated.get_rect(center=(current_x, current_y))
@@ -192,20 +358,27 @@ class Magicien(Unit):
     
     def calculate_angle(self, start_x, start_y, end_x, end_y):
         """
-        Calculate angle rotation of the arrow in degrees.
+        Calculate the angle of rotation of the attack in degrees.
         """
         dx = end_x - start_x
         dy = end_y - start_y
-        return -math.degrees(math.atan2(dy, dx))      
+        return -math.degrees(math.atan2(dy, dx)) 
 
-class Assassin(Unit):
-    def __init__(self, x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team):
-        super().__init__(x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team, range_=3)  # Assassin range 1
+    def activate_colmillo_critico(self, target):
+        """Activates the skill Critical Fang on the selected target"""
+        self.colmillo_critico_target = target
+        self.colmillo_critico_effect = True
+        self.colmillo_critico_turns = 3  # Duration of 3 turns
+        self.colmillo_critico_initial_vie = target.vie  # Store initial life of the target
+        target.vie = max(target.vie // 2, 1)  # Reduces life by half but not to 0
 
-class Infirmier(Unit):
-    def __init__(self, x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team):
-        super().__init__(x, y, mouvement, combat, tir, force, defense, attaque, vie, max_vie, team, range_=2)  # Infirmier range 1
-
-
-  
-        
+    def update(self):
+        """Update skill status and shift counter"""
+        if self.colmillo_critico_effect:
+            self.colmillo_critico_turns -= 1
+            if self.colmillo_critico_turns <= 0:
+                # Restore life to original value after 3 turns
+                if self.colmillo_critico_target:
+                    self.colmillo_critico_target.vie = self.colmillo_critico_initial_vie
+                self.colmillo_critico_effect = False
+                self.colmillo_critico_target = None 

@@ -13,20 +13,25 @@ CHARACTER_OPTIONS = [
     {"name": "Magicien2", "stats": (0, 0, 3, 6, 2, 5, 3, 2, 2, 2)},
     {"name": "Assassin2", "stats": (0, 0, 6, 2, 4, 4, 4, 4, 10, 10)}
 ]
+
+TEXT_COLOR = (255, 255, 255)  # color white for the text
 class Display:
     def __init__(self,screen,game): 
+        self.BUTTON_COLOR = (0, 255, 0)  # Define the colour of the button here
+        
         self.screen = screen
         self.game = game
         # Load the background image (replace with the actual image path)
         self.background_image = pygame.image.load("background.jpg").convert()
         self.background_image = pygame.transform.scale(self.background_image, (WIDTH, HEIGHT))
         
-        self.objects = []  # List of objects
-        # Initialize font
-        self.font = pygame.font.Font(None, 74)  
-        self.small_font = pygame.font.Font(None, 36)  
-        self.message = ""  # Attribute 'message'
+        self.objects = []  # List of objects 
+        # initialize font
+        self.font = pygame.font.Font(None, 74)  # default size
+        self.small_font = pygame.font.Font(None, 36)  # add a small font if needed
+        self.message = ""  # initialize attribute 'message'
         self.message_timer = 0 
+        
         
         # Load background image for the board
         self.BoardBackground = pygame.image.load("backgroundGame.png").convert()
@@ -173,8 +178,7 @@ class Display:
                 "Guerrier: Puissant en attaque rapprochée.",
                 "Archer: Attaque à distance avec précision.",
                 "Magicien: Utilise des sorts puissants.",
-                "Assassin: Peut achever des ennemis résistants en une seule fois."
-                "Infirmier: Peut soigner ses compagnons blessés au combat.add ",
+                "Assassin: Agile et rapide en déplacement.",
             ]
 
             for i, line in enumerate(powers_text_lines):
@@ -456,12 +460,12 @@ class Display:
             self.screen.blit(text_surface, (text_x, text_y))
     
     def show_message(self, message, duration=2000):
-        """Shows message for the given time (miliseconds)."""
+        """Shows message on the screen for a given time (in milisecond)."""
         self.message = message
-        self.message_timer = pygame.time.get_ticks() + duration  # Store the end of message time
+        self.message_timer = pygame.time.get_ticks() + duration  # Store time duration of the message
 
     def draw_message(self):
-        """Shows the message on the screen."""
+        """Draw message on the screen if there's one."""
         if self.message and pygame.time.get_ticks() < self.message_timer:
             font = pygame.font.Font(None, 36)
             text = font.render(self.message, True, (255, 255, 255))
@@ -469,8 +473,8 @@ class Display:
             self.screen.blit(text, text_rect)        
             
     def show_victory_message(self, message, confetti_color=(255, 255, 255)):
-        # Code for the confetti
-        confetti_particles = []  # list for the confetti
+        # Code for confetti
+        confetti_particles = []  # list for confetti
         for _ in range(150):
             x = random.randint(0, WIDTH)
             y = random.randint(-HEIGHT, 0)
@@ -500,9 +504,30 @@ class Display:
 
             pygame.display.flip()
             pygame.time.delay(30)        
-            # After confetti end, close game
+            # After confetti finish, end game
         pygame.quit()
         sys.exit()
+        
+       
+    def show_ability_menu(unit, screen):
+        """Muestra el menú de habilidades del mago."""
+        if isinstance(unit, Magicien):  # Show menu if unit is wizard
+            font = pygame.font.SysFont("Arial", 20)
+        
+            # Draw background for the menu
+            menu_width = 200
+            menu_height = 100
+            menu_x = unit.x * CELL_SIZE + CELL_SIZE  # Location of the menu, at the right of the unit
+            menu_y = unit.y * CELL_SIZE
+        
+            pygame.draw.rect(screen, (0, 0, 0), (menu_x, menu_y, menu_width, menu_height))
+            pygame.draw.rect(screen, (255, 255, 255), (menu_x, menu_y, menu_width, menu_height), 2)  # menu edge
+        
+            # show options
+            heal_text = font.render("Use potion (C)", True, (255, 255, 255))
+            screen.blit(heal_text, (menu_x + 10, menu_y + 10))
+
+    
             
     def flip_display(self, selected_unit=None, hovered_cell=None):
         #self.screen.fill(BLACK)
@@ -548,7 +573,7 @@ class Display:
             obj.draw(self.screen)
         
         
-        # Draw message (of there's one)
+        # Draw message (if there's one)
         self.draw_message()
         
         # Draw the menu in the lower-left corner
