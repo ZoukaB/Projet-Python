@@ -237,9 +237,9 @@ class Game:
                                     self.apply_terrain_effects(selected_unit)
                                     return
                                 else:
-                                    self.display.show_message("You can't move, cell is occupied!")
+                                    self.display.affiche_message_haut("You can't move, cell is occupied!",taille_police=36)
                             else:
-                                self.display.show_message("You can't move, cell is occupied by an obstacle!")
+                                self.display.affiche_message_haut("You can't move, cell is occupied by an obstacle!",taille_police=36)
                             break
                     # Update proposed cell position with arrow keys
                     if dx != 0 or dy != 0:
@@ -283,7 +283,7 @@ class Game:
 
         if selected_unit:
             # Show action options when unit is selected
-            self.display.affiche_message_centre("Que voulez-vous faire ? Attaquer (A), Utiliser une capacité (Tab) ou ne rien faire (Espace)",duree = 2000)
+            self.display.affiche_message_centre("Attaquer (A), Utiliser une capacité (Tab) ou ne rien faire (Espace)",duree = 1000)
 
         # Find enemies within attack range
         enemies_in_range = [
@@ -352,7 +352,7 @@ class Game:
 
         if selected_unit:
             # Show action options when unit is selected
-            self.display.affiche_message_centre("Que voulez-vous faire ? Attaquer (A), Utiliser une capacité (Tab), ou ne rien faire (Espace)",duree=2000)
+            self.display.affiche_message_centre("Attaquer (A), Utiliser une capacité (Tab), ou ne rien faire (Espace)",duree=1000)
 
         # Find enemies within attack range
         enemies_in_range = [
