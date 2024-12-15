@@ -133,35 +133,34 @@ class Display:
             pygame.display.flip()
     
     def show_rules(self):
-        """Displays the game rules screen centered in the middle of the screen."""
+        """Displays the game rules screen with the rules indented."""
         font = pygame.font.Font(None, 32)  # Slightly larger font size for better readability
         back_button = pygame.Rect(WIDTH - 150, HEIGHT - 60, 120, 40)
 
         # List of rules to display
         rules_text_lines = [
             "Règles du Jeu:",
-            "1. Chaque joueur choisit 2 personnages dans l'écran de sélection. Chaque personnage possède des statistiques et capacités spéciales propre.",
-            "2. Les joueurs déplacent leurs unités à tour de rôle à l'aide des flèches et de la commande espace. S'ils sont dans la range équivalente, ils peuvent ensuite lancer une attaque ou charger un ennemi ",
-            "3. L'objectif est de vaincre les deux unités adverses.",
+            "",
+            "    1. Chaque joueur choisit 2 personnages dans l'écran de sélection. Chaque personnage possède des statistiques et capacités spéciales propres.",
+            "    2. Les joueurs déplacent leurs unités à tour de rôle à l'aide des flèches et de la commande espace.",
+            "    3. Ils peuvent ensuite activer une capacité spéciale en appuyant sur TAB.",
+            "    4. Une fois la capacité activée, le joueur peut attaquer en appuyant sur espace.",
+            "    5. Si plusieurs unités ennemies sont dans la portée d'attaque, sélectionnez celle voulue en appuyant sur A.",
+            "    6. L'objectif est de vaincre les deux unités adverses.",
         ]
 
-        # Calculate the total height of the text block
+        # Starting y-position for displaying the text
+        start_y = 100
         line_height = font.get_height() + 10
-        total_text_height = len(rules_text_lines) * line_height
-
-        # Calculate starting y-position to center the text vertically
-        start_y = (HEIGHT - total_text_height) // 2
 
         running = True
         while running:
             self.screen.fill(BLACK)
 
-            # Display the rules text centered
+            # Display the rules text with indentation for the numbered list
             for i, line in enumerate(rules_text_lines):
                 text_surface = font.render(line, True, WHITE)
-                text_x = (WIDTH - text_surface.get_width()) // 2  # Center horizontally
-                text_y = start_y + i * line_height  # Line spacing
-                self.screen.blit(text_surface, (text_x, text_y))
+                self.screen.blit(text_surface, (50, start_y + i * line_height))
 
             # Draw back button
             pygame.draw.rect(self.screen, WHITE, back_button)
@@ -180,29 +179,45 @@ class Display:
                         running = False  # Go back to the main menu
 
             pygame.display.flip()
-    
+
     def show_powers(self):
-        
         """Displays the character powers screen."""
         font = pygame.font.Font(None, 28)
         back_button = pygame.Rect(WIDTH - 150, HEIGHT - 60, 120, 40)
+
+        # List of character stats and powers
+        powers_text_lines = [
+            "Pouvoirs des Personnages:",
+            "",
+            "  Guerrier: Mouvement = 3, Défense = 3, Attaque = 5, Vie = 20, Énergie = 10",
+            "    - Boisson du guerrier: 3 utilisations par partie, soigne 3 PV au guerrier.",
+            "    - Téméraire: Double son attaque et utilise 5 d'énergie.",
+            "",
+            "  Archer: Mouvement = 5, Défense = 3, Attaque = 4, Vie = 20, Énergie = 10",
+            "    - Flèche de guérison: 3 utilisations par partie, soigne 5 PV à une unité alliée.",
+            "    - Headshot: Triple son attaque et utilise 6 d'énergie.",
+            "",
+            "  Magicien: Mouvement = 4, Défense = 4, Attaque = 3, Vie = 20, Énergie = 10",
+            "    - Sort de poison: Empoisonne une unité ennemie pendant 3 tours (-1 PV par tour).",
+            "    - Boule de feu: Inflige -2 PV à chaque unité dans un rayon d'une case.",
+            "",
+            "  Assassin: Mouvement = 6, Défense = 2, Attaque = 4, Vie = 20, Énergie = 10",
+            "    - Coup fatal: 1 utilisation par partie, multiplie par 100 son attaque, utilise toute son énergie, et le met à 1 PV.",
+            "    - Fuite: Si ses PV sont inférieurs à 4, utilise 5 d'énergie pour se téléporter n'importe où sur la carte.",
+            "",
+            "  Infirmier: Mouvement = 4, Défense = 3, Attaque = 2, Vie = 20, Énergie = 10",
+            "    - Potion de soin: 3 utilisations par partie, soigne tous les alliés dans un rayon de 5 cases.",
+            "    - Soin intensif: Utilise 3 d'énergie et soigne 3 PV à tous les alliés adjacents.",
+        ]
 
         running = True
         while running:
             self.screen.fill(BLACK)
 
             # Display character powers text
-            powers_text_lines = [
-                "Pouvoirs des Personnages:",
-                "Guerrier: Puissant en attaque rapprochée. Il a des potions pour décupler sa vitalité et peut sacrifier de l'énergie pour plus de létalité",
-                "Archer: Spécialiste des attaques à distance. Il a concocté des flèches aux pouvoirs régénérateurs pour ses alliées et d'autres bien plus mortelles pour ses ennemis",
-                "Magicien: Adepte de sortilèges mortifère. Dans son arsenal magique, il possède une boule de feu et une vapeur empoisonnée",
-                "Assassin: Roublard agile et rusé. Il préférera peut être s'enfuir d'un combat désavantageux, mais s'il décide vraiment de combattre, une seule petite blessure lui suffira pour tuer son ennemi",
-            ]
-
             for i, line in enumerate(powers_text_lines):
                 text_surface = font.render(line, True, WHITE)
-                self.screen.blit(text_surface, (50, 100 + i * 40))
+                self.screen.blit(text_surface, (50, 100 + i * 30))
 
             # Draw back button
             pygame.draw.rect(self.screen, WHITE, back_button)
@@ -210,6 +225,7 @@ class Display:
             self.screen.blit(back_text, (back_button.x + (back_button.width - back_text.get_width()) // 2,
                                          back_button.y + (back_button.height - back_text.get_height()) // 2))
 
+            # Event handling
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -221,7 +237,7 @@ class Display:
                         running = False  # Go back to the main menu
 
             pygame.display.flip()
-        
+
     def character_choice_screen(self):
         # Font for button and text
         font = pygame.font.Font(None, 48)
