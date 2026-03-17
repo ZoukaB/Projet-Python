@@ -27,12 +27,12 @@ class Display:
         self.screen = screen
         self.game = game
         # Load the background image (replace with the actual image path)
-        self.background_image = pygame.image.load("background.jpg").convert()
+        self.background_image = pygame.image.load("Images_display/background.jpg").convert()
         self.background_image = pygame.transform.scale(self.background_image, (WIDTH, HEIGHT))
         
         self.font = pygame.font.Font(None, 74)  # Usando una fuente predeterminada con tamaño 74
         # Load background image for the board
-        self.BoardBackground = pygame.image.load("backgroundGame.png").convert()
+        self.BoardBackground = pygame.image.load("Images_display/backgroundGame.png").convert()
         self.BoardBackground = pygame.transform.scale(self.BoardBackground, (WIDTH,HEIGHT))
         
         # Load character images (replace with actual image paths)

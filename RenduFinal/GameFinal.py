@@ -19,14 +19,14 @@ class Rock(GameObject):
     # rock won't allow characters to pass
     def __init__ (self, x, y):
         super().__init__(x, y, "Rock")
-        self.image = pygame.image.load("rock.png").convert_alpha()
+        self.image = pygame.image.load("Images_display/rock.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
         self.passable = False
 
 class Bush(GameObject):
     def __init__(self, x,y):
         super().__init__(x, y, "Bush")
-        self.image = pygame.image.load("bush.png").convert_alpha()
+        self.image = pygame.image.load("Images_display/bush.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
         self.character_hidden = True
         self.passable = True
@@ -34,7 +34,7 @@ class Bush(GameObject):
 class Fire(GameObject):
     def __init__(self, x, y):
         super().__init__(x,y, "Fire")
-        self.image = pygame.image.load("fire.png").convert_alpha()
+        self.image = pygame.image.load("Images_display/fire.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
         self.damage = 3
         self.passable = True
