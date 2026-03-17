@@ -141,7 +141,7 @@ class Display:
         rules_text_lines = [
             "Règles du Jeu:",
             "",
-            "    1. Chaque joueur choisit 2 personnages dans l'écran de sélection. Chaque personnage possède des statistiques et capacités spéciales propres.",
+            "    1. Chaque joueur choisit 2 personnages dans l'écran de sélection. Chaque personnage possède des statistiques et capacités uniques.",
             "    2. Les joueurs déplacent leurs unités à tour de rôle à l'aide des flèches et de la commande espace.",
             "    3. Ils peuvent ensuite activer une capacité spéciale en appuyant sur TAB.",
             "    4. Une fois la capacité activée, le joueur peut attaquer en appuyant sur espace.",
