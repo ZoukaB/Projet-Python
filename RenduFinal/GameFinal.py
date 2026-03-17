@@ -322,10 +322,10 @@ class Game:
                         if enemies_in_range:
                             enemy = enemies_in_range[selected_enemy_index]
                             damage = selected_unit.attack_with_animation(enemy, self, self.screen)
-                            self.display.affiche_message_haut(f"{selected_unit.__class__.__name__} inflicted {damage} damage to {enemy.__class__.__name__}!")
+                            self.display.affiche_message_haut(f"{selected_unit.__class__.__name__} a infligé {damage} dégat à {enemy.__class__.__name__} !")
 
                             if enemy.vie <= 0:
-                                self.display.affiche_message_haut(f"{enemy.__class__.__name__} was defeated!")
+                                self.display.affiche_message_centre(f"{enemy.__class__.__name__} à été tué !")
                                 self.player2_units.remove(enemy)
                                 self.check_victory()
                             return
@@ -362,7 +362,7 @@ class Game:
 
         if selected_unit:
             # Show action options when unit is selected
-            self.display.affiche_message_centre("Attaquer (A), Utiliser une capacité (Tab), ou ne rien faire (Espace)",duree=1000)
+            self.display.affiche_message_centre("Attaquer (A), Utiliser une capacité (Tab), ou ne rien faire (Espace)",duree=2000)
 
         # Find enemies within attack range
         enemies_in_range = [
@@ -401,10 +401,10 @@ class Game:
                         if enemies_in_range:
                             enemy = enemies_in_range[selected_enemy_index]
                             damage = selected_unit.attack_with_animation(enemy, self, self.screen)
-                            self.display.affiche_message_centre(f"{selected_unit.__class__.__name__} inflicted {damage} damage to {enemy.__class__.__name__}!")
+                            self.display.affiche_message_haut(f"{selected_unit.__class__.__name__} a infligé {damage} dégat à {enemy.__class__.__name__} !")
 
                             if enemy.vie <= 0:
-                                self.display.affiche_message_centre(f"{enemy.__class__.__name__} was defeated!")
+                                self.display.affiche_message_centre(f"{enemy.__class__.__name__} à été tué !")
                                 self.player1_units.remove(enemy)
                                 self.check_victory()
                             return

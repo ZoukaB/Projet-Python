@@ -277,7 +277,6 @@ class Display:
         # Initialize starting positions for each player's units
         player1_positions = [(i, 0) for i in range(2)]
         player2_positions = [(GRID_COLUMNS - i, GRID_ROWS - 1) for i in range(1, 3)]
-        # player2_positions = [(GRID_COLUMNS - i, GRID_ROWS - 1) for i in range(1, 3)]
 
         # Main loop for the home screen
         running = True
@@ -507,17 +506,11 @@ class Display:
             line_height = bottom_font.get_height()
             total_text_height = len(bottom_lines) * line_height + (len(bottom_lines) - 1) * line_spacing
 
-            # Align the first line with the second column
-            # We'll use second_column_x + 10 as the alignment for the first line
-            # The second and third lines are already indented with spaces "  "
-            # which will visually show the indentation.
             
             start_y = menu_y + menu_height - 35 - total_text_height
 
             for i, line in enumerate(bottom_lines):
                 text_surface = bottom_font.render(line, True, (255, 255, 255))
-                # First line aligned with second column
-                # Following lines also start at the same x, but have leading spaces for indentation
                 text_x = second_column_x + 10
                 text_y = start_y + i * (line_height + line_spacing)
                 self.screen.blit(text_surface, (text_x, text_y))
@@ -555,9 +548,6 @@ class Display:
 
         capacity_choice = True
         while capacity_choice:
-            # Draw the current game screen
-            #self.display.flip_display_basic(selected_unit)
-
             # Draw the overlay
             self.screen.blit(overlay, (overlay_x, overlay_y))
 
@@ -619,7 +609,7 @@ class Display:
                                                         self.affiche_message_haut(selected_unit.fleche_de_guerison(unit))
                                                         wainting_selection = False
                                                 else:
-                                                    self.affiche_message_centre("Allié trop loin utiliser flèche de soin")
+                                                    self.affiche_message_centre("Allié trop loin pour utiliser une flèche de soin")
                                                     wainting_selection = False
                         
                             if isinstance(selected_unit,Magicien):
@@ -655,7 +645,7 @@ class Display:
                             if isinstance(selected_unit,Infirmier):
                                 capacity_choice = False  # Close the capacity menu
                                 self.flip_display_basic(selected_unit)
-                                self.affiche_message_centre("Choisir qui où vous voulez lancer la potion")
+                                self.affiche_message_centre("Choisir sur qui vous voulez lancer la potion")
                                 pygame.display.flip()
 
                                 # Waiting for the player to click on a cell
@@ -887,21 +877,10 @@ class Display:
 
         # Attendre pendant la durée spécifiée
         pygame.time.wait(duree)
-
-    #def flip_display_feu(self, target_x, target_y):
-
-        # # Highlight the fireball target cell
-        # target_rect = pygame.Rect(target_x * CELL_SIZE, target_y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-        # pygame.draw.rect(self.screen, (255, 100, 0), target_rect, 3)  # Orange outline for targeting
          
     def flip_display(self, selected_unit=None, hovered_cell=None):
         #self.screen.fill(BLACK)
         self.screen.blit(self.BoardBackground, (0,0)) # Board Background
-
-        #for x in range(0, WIDTH, CELL_SIZE):
-        #    for y in range(0, HEIGHT, CELL_SIZE):
-        #        rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
-        #        pygame.draw.rect(self.screen, WHITE, rect, 1)
 
         for unit in self.game.player1_units + self.game.player2_units:
             unit.draw(self.screen)
@@ -946,11 +925,6 @@ class Display:
     def flip_display_basic(self,selected_unit):
         #self.screen.fill(BLACK)
         self.screen.blit(self.BoardBackground, (0,0)) # Board Background
-
-        #for x in range(0, WIDTH, CELL_SIZE):
-        #    for y in range(0, HEIGHT, CELL_SIZE):
-        #        rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
-        #        pygame.draw.rect(self.screen, WHITE, rect, 1)
 
         for unit in self.game.player1_units + self.game.player2_units:
             unit.draw(self.screen)
